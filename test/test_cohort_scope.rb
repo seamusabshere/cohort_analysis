@@ -9,10 +9,10 @@ class TestCohortScope < Test::Unit::TestCase
   should "raise if no minimum_cohort_size is specified" do
     Citizen.minimum_cohort_size = nil
     assert_raises(RuntimeError) {
-      cohort = Citizen.big_cohort Hash.new
+      Citizen.big_cohort Hash.new
     }
     assert_raises(RuntimeError) {
-      cohort = Citizen.strict_cohort ActiveSupport::OrderedHash.new
+      Citizen.strict_cohort ActiveSupport::OrderedHash.new
     }
   end
 
@@ -31,7 +31,7 @@ class TestCohortScope < Test::Unit::TestCase
     
     should "raise if an OrderedHash is given to big_cohort" do
       assert_raises(ArgumentError) {
-        cohort = Citizen.big_cohort ActiveSupport::OrderedHash.new
+        Citizen.big_cohort ActiveSupport::OrderedHash.new
       }
     end
   end
@@ -39,7 +39,7 @@ class TestCohortScope < Test::Unit::TestCase
   context "strict_cohort" do
     should "raise if a non-OrderedHash is given to strict_cohort" do
       assert_raises(ArgumentError) {
-        cohort = Citizen.strict_cohort Hash.new
+        Citizen.strict_cohort Hash.new
       }
     end
   
