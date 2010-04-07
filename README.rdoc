@@ -1,17 +1,47 @@
 = cohort_scope
 
-Description goes here.
+Provides cohorts (in the form of ActiveRecord scopes) that dynamically widen until they contain a certain number of records.
 
-== Note on Patches/Pull Requests
- 
-* Fork the project.
-* Make your feature addition or bug fix.
-* Add tests for it. This is important so I don't break it in a
-  future version unintentionally.
-* Commit, do not mess with rakefile, version, or history.
-  (if you want to have your own version, that is fine but bump version in a commit by itself I can ignore when I pull)
-* Send me a pull request. Bonus points for topic branches.
+* <tt>big_cohort</tt> widens by finding the constraint that eliminates the most records and removing it.
+* <tt>strict_cohort</tt> widens by eliminating constraints in order.
+
+= Real-world use
+
+This has been at use at http://carbon.brighterplanet.com since April 2010, where it helps sift through climate data to come up with meaningful emissions calculations.
+
+= Quick start
+
+Let's pretend the U.S. Census provided information about birthday and favorite color:
+
+  class Citizen < ActiveRecord::Base
+    extend CohortScope
+    self.minimum_cohort_size = 1_000
+  end
+
+Now I need to run a calculation that ideally uses birthday and favorite color, but most importantly looks at a large cohort:
+
+  Citizen.big_cohort :birthdate => (Date.parse('1980-01-01')..Date.parse('1990-01-01')), :favorite_color => 'heliotrope'
+  # => [... a cohort of at least 1,000 records (otherwise it's empty),
+            where everybody's favorite color MAY be heliotrope
+            and everybody's birthday MAY be between 1980 and 1990
+            (at least one of those constraints will hold) ...]
+
+What if my calculation privileges favorite color? In other words, if you can't give me a cohort of minimum size within the birthday constraint, at least give me one where everybody loves heliotrope:
+
+  ordered_constraints = ActiveSupport::OrderedHash.new
+  ordered_constraints[:favorite_color] = 'heliotrope'
+  ordered_constraints[:birthdate] = (Date.parse('1980-01-01')..Date.parse('1990-01-01'))
+
+  Citizen.strict_cohort favorite_color_matters_most
+  # => [... a cohort of at least 1,000 records (otherwise it's empty),
+            where everybody's favorite color IS heliotrope
+            and everybody's birthday MAY be between 1980 and 1990 ...]
+
+= Wishlist
+
+* support for ruby 1.9's implicitly ordered hashes
+* support for constraining on <tt>IS NULL</tt> or <tt>IS NOT NULL</tt>
 
 == Copyright
 
-Copyright (c) 2010 Seamus Abshere. See LICENSE for details.
+Copyright (c) 2010 Seamus Abshere and Andy Rossmeissl. See LICENSE for details.
