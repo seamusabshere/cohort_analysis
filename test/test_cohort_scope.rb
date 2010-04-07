@@ -21,6 +21,11 @@ class TestCohortScope < Test::Unit::TestCase
       cohort = Citizen.big_cohort :favorite_color => 'heliotrope'
       assert_equal 0, cohort.count
     end
+    
+    should "take minimum_cohort_size as an optional argument" do
+      cohort = Citizen.big_cohort({:favorite_color => 'heliotrope'}, 0)
+      assert_equal 1, cohort.count
+    end
   
     should "seek a cohort of maximum size" do
       cohort = Citizen.big_cohort :birthdate => @date_range, :favorite_color => 'heliotrope'
@@ -41,6 +46,14 @@ class TestCohortScope < Test::Unit::TestCase
       assert_raises(ArgumentError) {
         Citizen.strict_cohort Hash.new
       }
+    end
+    
+    should "take minimum_cohort_size as an optional argument" do
+      ordered_attributes = ActiveSupport::OrderedHash.new
+      ordered_attributes[:favorite_color] = 'heliotrope'
+    
+      cohort = Citizen.strict_cohort ordered_attributes, 0
+      assert_equal 1, cohort.count
     end
   
     should "return an empty (strict) cohort if it can't find one that meets size requirements" do

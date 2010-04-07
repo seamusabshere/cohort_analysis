@@ -36,9 +36,9 @@ module CohortScope
 
   # Find the biggest scope possible by removing constraints <b>in any order</b>.
   # Returns an empty scope if it can't meet the minimum scope size.
-  def big_cohort(constraints)
+  def big_cohort(constraints = {}, custom_minimum_cohort_size = nil)
     raise ArgumentError, "You can't give a big_cohort an OrderedHash; do you want strict_cohort?" if constraints.is_a?(ActiveSupport::OrderedHash)
-    _cohort_massive_scope constraints
+    _cohort_massive_scope constraints, custom_minimum_cohort_size
   end
 
   # Find the first acceptable scope by removing constraints <b>in strict order</b>, starting with the last constraint.
@@ -57,15 +57,15 @@ module CohortScope
   #
   # If the original constraints don't meet the minimum scope size, then the only constraint that can be removed is birthdate.
   # In other words, this would never return a scope that was constrained on birthdate but not on favorite_color.
-  def strict_cohort(constraints)
+  def strict_cohort(constraints, custom_minimum_cohort_size = nil)
     raise ArgumentError, "You need to give strict_cohort an OrderedHash" unless constraints.is_a?(ActiveSupport::OrderedHash)
-    _cohort_massive_scope constraints
+    _cohort_massive_scope constraints, custom_minimum_cohort_size
   end
 
   protected
 
   # Recursively look for a scope that meets the constraints and is at least <tt>minimum_cohort_size</tt>.
-  def _cohort_massive_scope(constraints)
+  def _cohort_massive_scope(constraints, custom_minimum_cohort_size)
     raise RuntimeError, "You need to set #{name}.minimum_cohort_size = X" unless minimum_cohort_size.present?
     
     if constraints.values.none? # failing base case
@@ -75,10 +75,10 @@ module CohortScope
     this_hash = _cohort_constraints constraints
     this_count = scoped(this_hash).count
     
-    if this_count >= minimum_cohort_size # successful base case
+    if this_count >= (custom_minimum_cohort_size || minimum_cohort_size) # successful base case
       massive_scoped this_hash
     else
-      _cohort_massive_scope _cohort_reduce_constraints(constraints)
+      _cohort_massive_scope _cohort_reduce_constraints(constraints), custom_minimum_cohort_size
     end
   end
   
