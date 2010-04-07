@@ -56,7 +56,7 @@ class TestCohortScope < Test::Unit::TestCase
       assert_equal 1, cohort.count
     end
   
-    should "return an empty (strict) cohort if it can't find one that meets size requirements" do
+    should "return an empty cohort if it can't find one that meets size requirements" do
       ordered_attributes = ActiveSupport::OrderedHash.new
       ordered_attributes[:favorite_color] = 'heliotrope'
     
