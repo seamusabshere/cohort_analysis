@@ -9,7 +9,7 @@ begin
     gem.description = %Q{Provides big_cohort, which widens by finding the constraint that eliminates the most records and removing it. Also provides strict_cohort, which widens by eliminating constraints in order.}
     gem.email = "seamus@abshere.net"
     gem.homepage = "http://github.com/seamusabshere/cohort_scope"
-    gem.authors = ["Seamus Abshere", "Andy Rossmeissl"]
+    gem.authors = ["Seamus Abshere", "Andy Rossmeissl", "Derek Kastner"]
     gem.add_dependency "activesupport", ">=3.0.0.beta2"
     gem.add_dependency "activerecord", ">=3.0.0.beta2"
     gem.add_development_dependency "shoulda", ">= 2.10.3"
