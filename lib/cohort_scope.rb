@@ -6,12 +6,12 @@ module ActiveRecord
   class Base
     def massive_unscoped
       @massive_unscoped ||= MassiveRelation.new(self, arel_table)
-      finder_needs_type_condition? ? @unscoped.where(type_condition) : @unscoped
+      finder_needs_type_condition? ? @massive_unscoped.where(type_condition) : @massive_unscoped
     end
   end
   module NamedScope
     module ClassMethods
-      # Initialize a MassiveScope, which, when inspected, does not generate a huge string.
+      # Work with a MassiveRelation, which, when inspected, does not generate a huge string.
       def massive_scoped(options = {}, &block)
         if options.present?
           scoped = current_scoped_methods ? massive_unscoped.merge(current_scoped_methods) : unscoped.clone
@@ -26,7 +26,7 @@ module ActiveRecord
   class MassiveRelation < Relation
     # Don't try to output a massive string.
     def inspect
-      "<Massive scope: #{count} members>"
+      "<Massive relation: #{count} members>"
     end
     # Don't try to put everything into json.
     def to_json(*args)
