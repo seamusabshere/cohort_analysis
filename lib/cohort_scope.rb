@@ -3,26 +3,34 @@ require 'active_record'
 require 'active_support/core_ext/module/delegation'
 
 module ActiveRecord
+  class Base
+    def massive_unscoped
+      @massive_unscoped ||= MassiveRelation.new(self, arel_table)
+      finder_needs_type_condition? ? @unscoped.where(type_condition) : @unscoped
+    end
+  end
   module NamedScope
     module ClassMethods
       # Initialize a MassiveScope, which, when inspected, does not generate a huge string.
       def massive_scoped(options = {}, &block)
         if options.present?
-          MassiveScope.init(self, options, &block)
+          scoped = current_scoped_methods ? massive_unscoped.merge(current_scoped_methods) : unscoped.clone
+          relation = scoped.apply_finder_options(options)
+          block_given? ? relation.extending(Module.new(&block)) : relation
         else
           raise "MassiveScopes should be created with options"
         end
       end
     end
-    class MassiveScope < Scope
-      # Don't try to output a massive string.
-      def inspect
-        "<Massive scope: #{count} members>"
-      end
-      # Don't try to put everything into json.
-      def to_json(*args)
-        { :members => count }.to_json
-      end
+  end
+  class MassiveRelation < Relation
+    # Don't try to output a massive string.
+    def inspect
+      "<Massive scope: #{count} members>"
+    end
+    # Don't try to put everything into json.
+    def to_json(*args)
+      { :members => count }.to_json
     end
   end
 end
