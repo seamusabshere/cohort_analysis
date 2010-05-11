@@ -6,6 +6,18 @@ class TestCohortScope < Test::Unit::TestCase
     @date_range = (Date.parse('1980-01-01')..Date.parse('1990-01-01'))
   end
 
+  should "not raise on to_json" do
+    cohort = Citizen.big_cohort :birthdate => @date_range, :favorite_color => 'heliotrope'
+    assert_nothing_raised do
+      cohort.to_json
+    end
+  end
+  
+  should "inspect to a short string" do
+    cohort = Citizen.big_cohort :birthdate => @date_range, :favorite_color => 'heliotrope'
+    assert_equal "<Massive ActiveRecord scope with 9 members>", cohort.inspect
+  end
+
   should "raise if no minimum_cohort_size is specified" do
     Citizen.minimum_cohort_size = nil
     assert_raises(RuntimeError) {

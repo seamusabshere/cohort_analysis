@@ -11,7 +11,7 @@ require 'cohort_scope'
 class Test::Unit::TestCase
 end
 
-$logger = Logger.new STDOUT #'test/test.log'
+$logger = Logger.new 'test/test.log' #STDOUT
 ActiveSupport::Notifications.subscribe do |*args|
   event = ActiveSupport::Notifications::Event.new(*args)
   $logger.debug "#{event.payload[:name]} (#{event.duration}) #{event.payload[:sql]}"
@@ -21,7 +21,7 @@ ActiveRecord::Base.establish_connection(
   'adapter' => 'mysql',
   'database' => 'cohort_scope_test',
   'username' => 'root',
-  'password' => ''
+  'password' => 'password'
 )
 
 ActiveRecord::Schema.define(:version => 20090819143429) do

@@ -8,34 +8,18 @@ require 'active_support/version'
 end if ActiveSupport::VERSION::MAJOR == 3
 
 module ActiveRecord
-  class Base
-    def massive_unscoped
-      @massive_unscoped ||= MassiveRelation.new(self, arel_table)
-      finder_needs_type_condition? ? @massive_unscoped.where(type_condition) : @massive_unscoped
+  class Relation
+    def inspect_count_only!
+      @_inspect_count_only = true
     end
-  end
-  module NamedScope
-    module ClassMethods
-      # Work with a MassiveRelation, which, when inspected, does not generate a huge string.
-      def massive_scoped(options = {}, &block)
-        if options.present?
-          scoped = current_scoped_methods ? massive_unscoped.merge(current_scoped_methods) : unscoped.clone
-          relation = scoped.apply_finder_options(options)
-          block_given? ? relation.extending(Module.new(&block)) : relation
-        else
-          raise "MassiveScopes should be created with options"
-        end
-      end
+    def inspect_count_only?
+      @_inspect_count_only == true
     end
-  end
-  class MassiveRelation < Relation
-    # Don't try to output a massive string.
+    def as_json(*args)
+      inspect_count_only? ? { :members => count }.as_json : to_a.as_json
+    end
     def inspect
-      "<Massive relation: #{count} members>"
-    end
-    # Don't try to put everything into json.
-    def to_json(*args)
-      { :members => count }.to_json
+      inspect_count_only? ? "<Massive ActiveRecord scope with #{count} members>" : to_a.inspect
     end
   end
 end
@@ -51,7 +35,7 @@ module CohortScope
   # Returns an empty scope if it can't meet the minimum scope size.
   def big_cohort(constraints = {}, custom_minimum_cohort_size = nil)
     raise ArgumentError, "You can't give a big_cohort an OrderedHash; do you want strict_cohort?" if constraints.is_a?(ActiveSupport::OrderedHash)
-    _cohort_massive_scope constraints, custom_minimum_cohort_size
+    _cohort_scope constraints, custom_minimum_cohort_size
   end
 
   # Find the first acceptable scope by removing constraints <b>in strict order</b>, starting with the last constraint.
@@ -72,27 +56,29 @@ module CohortScope
   # In other words, this would never return a scope that was constrained on birthdate but not on favorite_color.
   def strict_cohort(constraints, custom_minimum_cohort_size = nil)
     raise ArgumentError, "You need to give strict_cohort an OrderedHash" unless constraints.is_a?(ActiveSupport::OrderedHash)
-    _cohort_massive_scope constraints, custom_minimum_cohort_size
+    _cohort_scope constraints, custom_minimum_cohort_size
   end
 
   protected
 
   # Recursively look for a scope that meets the constraints and is at least <tt>minimum_cohort_size</tt>.
-  def _cohort_massive_scope(constraints, custom_minimum_cohort_size)
+  def _cohort_scope(constraints, custom_minimum_cohort_size)
     raise RuntimeError, "You need to set #{name}.minimum_cohort_size = X" unless minimum_cohort_size.present?
     
     if constraints.values.none? # failing base case
-      return massive_scoped(:conditions => 'false')
+      return scoped.where('false')
     end
     
     this_hash = _cohort_constraints constraints
-    this_count = scoped(this_hash).count
+    this_count = scoped.where(this_hash).count
     
     if this_count >= (custom_minimum_cohort_size || minimum_cohort_size) # successful base case
-      massive_scoped this_hash
+      cohort = scoped.where this_hash
     else
-      _cohort_massive_scope _cohort_reduce_constraints(constraints), custom_minimum_cohort_size
+      cohort = _cohort_scope _cohort_reduce_constraints(constraints), custom_minimum_cohort_size
     end
+    cohort.inspect_count_only!
+    cohort
   end
   
   # Sanitize constraints by
@@ -110,7 +96,7 @@ module CohortScope
       memo.merge! condition if condition.is_a? Hash
       memo
     end
-    { :conditions => conditions }
+    conditions
   end
   
   # Convert constraints that are provided as ActiveRecord::Base objects into their corresponding integer primary keys.
@@ -152,7 +138,7 @@ module CohortScope
     losing_key = nil
     constraints.keys.each do |key|
       test_constraints = constraints.except(key)
-      count_after_removal = scoped(_cohort_constraints(test_constraints)).count
+      count_after_removal = scoped.where(_cohort_constraints(test_constraints)).count
       if highest_count_after_removal.nil? or count_after_removal > highest_count_after_removal
         highest_count_after_removal = count_after_removal
         losing_key = key
