@@ -66,7 +66,7 @@ module CohortScope
     raise RuntimeError, "You need to set #{name}.minimum_cohort_size = X" unless minimum_cohort_size.present?
     
     if constraints.values.none? # failing base case
-      return scoped.where(false)
+      return scoped.where('false')
     end
     
     this_hash = _cohort_constraints constraints
