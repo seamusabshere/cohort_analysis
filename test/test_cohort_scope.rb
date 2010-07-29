@@ -59,6 +59,11 @@ class TestCohortScope < Test::Unit::TestCase
         Citizen.big_cohort ActiveSupport::OrderedHash.new
       }
     end
+    
+    should "result in a relation that has inspect_count_only set" do
+      cohort = Citizen.big_cohort :favorite_color => 'heliotrope'
+      assert cohort.inspect_count_only?
+    end
   end
   
   context "strict_cohort" do
@@ -98,6 +103,14 @@ class TestCohortScope < Test::Unit::TestCase
     
       cohort = Citizen.strict_cohort birthdate_matters_most
       assert_equal 9, cohort.count
+    end
+    
+    should "result in a relation that has inspect_count_only set" do
+      ordered_attributes = ActiveSupport::OrderedHash.new
+      ordered_attributes[:favorite_color] = 'heliotrope'
+    
+      cohort = Citizen.strict_cohort ordered_attributes
+      assert cohort.inspect_count_only?
     end
   end
 end
