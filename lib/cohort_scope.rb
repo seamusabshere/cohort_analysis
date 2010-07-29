@@ -10,10 +10,10 @@ end if ActiveSupport::VERSION::MAJOR == 3
 module ActiveRecord
   class Relation
     def inspect_count_only!
-      @_inspect_count_only = true
+      @inspect_count_only = true
     end
     def inspect_count_only?
-      @_inspect_count_only == true
+      @inspect_count_only == true
     end
     def as_json(*args)
       inspect_count_only? ? { :members => count }.as_json : to_a.as_json
