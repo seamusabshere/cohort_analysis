@@ -25,10 +25,8 @@ module ActiveRecord
 end
 
 module CohortScope
-  def self.extended(base)
-    base.class_eval do
-      cattr_accessor :minimum_cohort_size, :instance_writer => false
-    end
+  def self.extended(klass)
+    klass.cattr_accessor :minimum_cohort_size, :instance_writer => false
   end
 
   # Find the biggest scope possible by removing constraints <b>in any order</b>.
