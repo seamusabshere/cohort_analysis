@@ -15,11 +15,11 @@ module ActiveRecord
     def inspect_count_only?
       @inspect_count_only == true
     end
-    def as_json(*args)
-      inspect_count_only? ? { :members => count }.as_json : to_a.as_json
+    def as_json(*)
+      inspect_count_only? ? { :members => count } : super
     end
     def inspect
-      inspect_count_only? ? "<Massive ActiveRecord scope with #{count} members>" : to_a.inspect
+      inspect_count_only? ? "<Massive ActiveRecord scope with #{count} members>" : super
     end
   end
 end

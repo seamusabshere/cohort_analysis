@@ -6,11 +6,19 @@ class TestCohortScope < Test::Unit::TestCase
     @date_range = (Date.parse('1980-01-01')..Date.parse('1990-01-01'))
   end
 
-  should "not raise on to_json" do
+  should "only show the count in the json representation" do
     cohort = Citizen.big_cohort :birthdate => @date_range, :favorite_color => 'heliotrope'
-    assert_nothing_raised do
-      cohort.to_json
-    end
+    assert_equal({ :members => 9 }.to_json, cohort.to_json)
+  end
+  
+  should "not mess with normal as_json" do
+    non_cohort = Citizen.all
+    assert_equal non_cohort.to_a.as_json, non_cohort.as_json
+  end
+  
+  should "not mess with normal inspect" do
+    non_cohort = Citizen.all
+    assert_equal non_cohort.to_a.inspect, non_cohort.inspect
   end
   
   should "inspect to a short string" do
