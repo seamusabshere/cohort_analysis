@@ -64,7 +64,7 @@ module CohortScope
     raise RuntimeError, "You need to set #{name}.minimum_cohort_size = X" unless minimum_cohort_size.present?
     
     if constraints.values.none? # failing base case
-      empty_cohort = scoped.where 'false'
+      empty_cohort = scoped.where '1 = 2'
       empty_cohort.inspect_count_only!
       return empty_cohort
     end
