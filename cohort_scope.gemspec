@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{cohort_scope}
-  s.version = "0.0.6"
+  s.version = "0.0.7"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Seamus Abshere", "Andy Rossmeissl", "Derek Kastner"]
-  s.date = %q{2010-07-29}
+  s.date = %q{2010-08-20}
   s.description = %q{Provides big_cohort, which widens by finding the constraint that eliminates the most records and removing it. Also provides strict_cohort, which widens by eliminating constraints in order.}
   s.email = %q{seamus@abshere.net}
   s.extra_rdoc_files = [
