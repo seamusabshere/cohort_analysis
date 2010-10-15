@@ -28,6 +28,19 @@ ActiveRecord::Schema.define(:version => 20090819143429) do
     t.string 'favorite_color'
     t.integer 'teeth'
   end
+  create_table 'houses', :force => true do |t|
+    t.string 'period'
+    t.string 'address'
+    t.integer 'storeys'
+  end
+  create_table 'styles', :force => true do |t|
+    t.string 'period'
+    t.string 'name'
+  end
+  create_table 'residents', :force => true do |t|
+    t.integer 'house_id'
+    t.string 'name'
+  end
 end
 
 class Citizen < ActiveRecord::Base
@@ -52,3 +65,28 @@ end
 ].each do |birthdate, favorite_color, teeth|
   Citizen.create! :birthdate => birthdate, :favorite_color => favorite_color, :teeth => teeth
 end
+
+class Style < ActiveRecord::Base
+  extend CohortScope
+  self.minimum_cohort_size = 3
+  has_many :houses
+end
+class House < ActiveRecord::Base
+  belongs_to :style, :foreign_key => 'period', :primary_key => 'period'
+  has_one :resident
+end
+class Resident < ActiveRecord::Base
+  has_one :house
+end
+
+Style.create! :period => 'arts and crafts', :name => 'classical revival'
+Style.create! :period => 'arts and crafts', :name => 'gothic'
+Style.create! :period => 'arts and crafts', :name => 'art deco'
+Style.create! :period => 'victorian', :name => 'stick-eastlake'
+Style.create! :period => 'victorian', :name => 'queen anne'
+h1 = House.create! :period => 'arts and crafts', :address => '123 Maple', :storeys => 1
+h2 = House.create! :period => 'arts and crafts', :address => '223 Walnut', :storeys => 2
+h3 = House.create! :period => 'victorian', :address => '323 Pine', :storeys => 2
+Resident.create! :house => h1, :name => 'Bob'
+Resident.create! :house => h2, :name => 'Rob'
+Resident.create! :house => h3, :name => 'Gob'

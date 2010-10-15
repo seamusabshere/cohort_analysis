@@ -27,12 +27,14 @@ module CohortScope
       # Sanitize constraints by
       # * removing nil constraints (so constraints like "X IS NULL" are impossible, sorry)
       # * converting ActiveRecord::Base objects into integer foreign key constraints
-      def sanitize_constraints(constraints)
+      def sanitize_constraints(model, constraints)
         new_hash = constraints.is_a?(ActiveSupport::OrderedHash) ? ActiveSupport::OrderedHash.new : Hash.new
         conditions = constraints.inject(new_hash) do |memo, tuple|
           k, v = tuple
           if v.kind_of?(ActiveRecord::Base)
-            condition = { association_primary_key(k) => v.to_param }
+            primary_key = association_primary_key(model, k)
+            param = v.respond_to?(primary_key) ? v.send(primary_key) : v.to_param
+            condition = { primary_key => param }
           elsif !v.nil?
             condition = { k => v }
           end
