@@ -13,7 +13,7 @@ module CohortScope
           return new(empty_cohort)
         end
 
-        constraint_hash = sanitize_constraints constraints
+        constraint_hash = sanitize_constraints model, constraints
         constrained_scope = model.scoped.where(constraint_hash)
 
         if constrained_scope.count >= custom_minimum_cohort_size
@@ -47,10 +47,11 @@ module CohortScope
       # Only works for <tt>belongs_to</tt> relationships.
       #
       # For example, :car => <#Car> might get translated into :car_id => 44.
-      def association_primary_key(name)
+      def association_primary_key(model, name)
         @_cohort_association_primary_keys ||= {}
         return @_cohort_association_primary_keys[name] if @_cohort_association_primary_keys.has_key? name
-        a = reflect_on_association name
+        a = model.reflect_on_association name
+        raise "there is no association #{name.inspect} on #{model}" if a.nil?
         raise "can't use cohort scope on :through associations (#{self.name} #{name})" if a.options.has_key? :through
         if !a.primary_key_name.blank?
           @_cohort_association_primary_keys[name] = a.primary_key_name
