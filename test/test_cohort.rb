@@ -1,6 +1,6 @@
 require 'helper'
 
-class TestCohortScope < Test::Unit::TestCase
+class TestCohort < Test::Unit::TestCase
   def setup
     Citizen.minimum_cohort_size = 3
     @date_range = (Date.parse('1980-01-01')..Date.parse('1990-01-01'))
