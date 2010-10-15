@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{cohort_scope}
-  s.version = "0.0.7"
+  s.version = "0.1.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Seamus Abshere", "Andy Rossmeissl", "Derek Kastner"]
-  s.date = %q{2010-08-20}
+  s.date = %q{2010-10-15}
   s.description = %q{Provides big_cohort, which widens by finding the constraint that eliminates the most records and removing it. Also provides strict_cohort, which widens by eliminating constraints in order.}
   s.email = %q{seamus@abshere.net}
   s.extra_rdoc_files = [
@@ -25,7 +25,11 @@ Gem::Specification.new do |s|
      "VERSION",
      "cohort_scope.gemspec",
      "lib/cohort_scope.rb",
+     "lib/cohort_scope/big_cohort.rb",
+     "lib/cohort_scope/cohort.rb",
+     "lib/cohort_scope/strict_cohort.rb",
      "test/helper.rb",
+     "test/test_cohort.rb",
      "test/test_cohort_scope.rb"
   ]
   s.homepage = %q{http://github.com/seamusabshere/cohort_scope}
@@ -35,6 +39,7 @@ Gem::Specification.new do |s|
   s.summary = %q{Provides cohorts (in the form of ActiveRecord scopes) that dynamically widen until they contain a certain number of records.}
   s.test_files = [
     "test/helper.rb",
+     "test/test_cohort.rb",
      "test/test_cohort_scope.rb"
   ]
 
