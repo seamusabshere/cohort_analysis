@@ -18,10 +18,8 @@ ActiveSupport::Notifications.subscribe do |*args|
 end
 
 ActiveRecord::Base.establish_connection(
-  'adapter' => 'mysql',
-  'database' => 'cohort_scope_test',
-  'username' => 'root',
-  'password' => 'password'
+  'adapter' => 'sqlite3',
+  'database' => ':memory:'
 )
 
 ActiveRecord::Schema.define(:version => 20090819143429) do
