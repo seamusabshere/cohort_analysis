@@ -26,6 +26,12 @@ class TestCohortScope < Test::Unit::TestCase
     assert_equal "<Massive ActiveRecord scope with 9 members>", cohort.inspect
   end
 
+  should "retain the scope's original behavior" do
+    cohort = Citizen.big_cohort :birthdate => @date_range, :favorite_color => 'heliotrope'
+    assert_kind_of Citizen, cohort.last
+    assert_kind_of Citizen, cohort.where(:teeth => 31).first
+  end
+
   should "raise if no minimum_cohort_size is specified" do
     Citizen.minimum_cohort_size = nil
     assert_raises(RuntimeError) {
