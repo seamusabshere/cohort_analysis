@@ -30,15 +30,28 @@ class TestCohort < Test::Unit::TestCase
     end
   end
 
-  context '.association_primary_key' do
-    should 'include constraints that are models related by a primary key' do
+  context '.association_foreign_key' do
+    should 'include constraints that are models related by a standard foreign key' do
       gob = Resident.find_by_name('Gob')
-      key = CohortScope::Cohort.association_primary_key Resident, :house
+      key = CohortScope::Cohort.association_foreign_key Resident, :house
       assert_equal 'resident_id', key
     end
-    should 'include constraints that are models related by a non-primary key' do
-      key = CohortScope::Cohort.association_primary_key House, :style
+    should 'include constraints that are models related by a non-standard foreign key' do
+      key = CohortScope::Cohort.association_foreign_key House, :style
       assert_equal 'period', key
+    end
+  end
+
+  context '.association_lookup_value' do
+    should 'include constraints that are models related by a standard foreign key' do
+      gob = Resident.find_by_name('Gob')
+      lookup = CohortScope::Cohort.association_lookup_value Resident, :house, gob
+      assert_equal gob.to_param, lookup
+    end
+    should 'include constraints that are models related by a non-standard foreign key key' do
+      rev = Style.find_by_name 'classical revival'
+      lookup = CohortScope::Cohort.association_lookup_value House, :style, rev
+      assert_equal 'arts and crafts', lookup
     end
   end
 end

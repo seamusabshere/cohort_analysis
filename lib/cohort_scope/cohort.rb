@@ -32,9 +32,9 @@ module CohortScope
         conditions = constraints.inject(new_hash) do |memo, tuple|
           k, v = tuple
           if v.kind_of?(ActiveRecord::Base)
-            primary_key = association_primary_key(model, k)
-            param = v.respond_to?(primary_key) ? v.send(primary_key) : v.to_param
-            condition = { primary_key => param }
+            foreign_key = association_foreign_key model, k
+            lookup_value = association_lookup_value model, k, v
+            condition = { foreign_key => lookup_value }
           elsif !v.nil?
             condition = { k => v }
           end
@@ -44,21 +44,37 @@ module CohortScope
         conditions
       end
       
-      # Convert constraints that are provided as ActiveRecord::Base objects into their corresponding integer primary keys.
+      # Convert constraints that are provided as ActiveRecord::Base objects into their corresponding primary keys.
       #
       # Only works for <tt>belongs_to</tt> relationships.
       #
-      # For example, :car => <#Car> might get translated into :car_id => 44.
-      def association_primary_key(model, name)
-        @_cohort_association_primary_keys ||= {}
-        return @_cohort_association_primary_keys[name] if @_cohort_association_primary_keys.has_key? name
-        a = model.reflect_on_association name
-        raise "there is no association #{name.inspect} on #{model}" if a.nil?
-        raise "can't use cohort scope on :through associations (#{self.name} #{name})" if a.options.has_key? :through
-        if !a.primary_key_name.blank?
-          @_cohort_association_primary_keys[name] = a.primary_key_name
+      # For example, :car => <#Car> might get translated into :car_id => 44 or :car_type => 44 if :foreign_key option is given.
+      def association_foreign_key(model, name)
+        @_cohort_association_foreign_keys ||= {}
+        return @_cohort_association_foreign_keys[name] if @_cohort_association_foreign_keys.has_key? name
+        association = model.reflect_on_association name
+        raise "there is no association #{name.inspect} on #{model}" if association.nil?
+        raise "can't use cohort scope on :through associations (#{self.name} #{name})" if association.options.has_key? :through
+        foreign_key = association.instance_variable_get(:@options)[:foreign_key]
+        if !foreign_key.blank?
+          @_cohort_association_foreign_keys[name] = foreign_key
         else
-          raise "we need some other way to find primary key"
+          @_cohort_association_foreign_keys[name] = association.primary_key_name
+        end
+      end
+      
+      # Convert constraints that are provided as ActiveRecord::Base objects into their corresponding lookup values
+      #
+      # Only works for <tt>belongs_to</tt> relationships.
+      #
+      # For example, :car => <#Car> might get translated into :car_id => 44 or :car_id => 'JHK123' if :primary_key option is given.
+      def association_lookup_value(model, name, value)
+        association = model.reflect_on_association name
+        primary_key = association.instance_variable_get(:@options)[:primary_key]
+        if primary_key.blank?
+          value.to_param
+        else
+          value.send primary_key
         end
       end
     end
