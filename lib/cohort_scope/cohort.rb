@@ -50,16 +50,16 @@ module CohortScope
       #
       # For example, :car => <#Car> might get translated into :car_id => 44 or :car_type => 44 if :foreign_key option is given.
       def association_foreign_key(model, name)
-        @_cohort_association_foreign_keys ||= {}
-        return @_cohort_association_foreign_keys[name] if @_cohort_association_foreign_keys.has_key? name
+        @association_foreign_key ||= {}
+        return @association_foreign_key[name] if @association_foreign_key.has_key? name
         association = model.reflect_on_association name
         raise "there is no association #{name.inspect} on #{model}" if association.nil?
         raise "can't use cohort scope on :through associations (#{self.name} #{name})" if association.options.has_key? :through
         foreign_key = association.instance_variable_get(:@options)[:foreign_key]
         if !foreign_key.blank?
-          @_cohort_association_foreign_keys[name] = foreign_key
+          @association_foreign_key[name] = foreign_key
         else
-          @_cohort_association_foreign_keys[name] = association.primary_key_name
+          @association_foreign_key[name] = association.primary_key_name
         end
       end
       
