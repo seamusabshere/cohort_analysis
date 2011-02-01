@@ -80,6 +80,7 @@ module CohortScope
     end
 
     def initialize(obj)
+      super
       @_ch_obj = obj
     end
     def __getobj__
