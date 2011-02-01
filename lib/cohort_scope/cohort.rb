@@ -87,8 +87,9 @@ module CohortScope
       @_ch_obj
     end
 
-    def as_json(*)
-      { :members => count }
+    # sabshere 2/1/11 overriding as_json per usual doesn't seem to work
+    def to_json(*)
+      { :members => count }.to_json
     end
 
     def inspect
