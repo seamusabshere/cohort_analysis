@@ -6,6 +6,25 @@ class TestCohortScope < Test::Unit::TestCase
     @date_range = (Date.parse('1980-01-01')..Date.parse('1990-01-01'))
   end
 
+  should "properly use blocks" do
+    cohort = Citizen.big_cohort(:birthdate => @date_range)
+    assert cohort.all? { |c| true }
+    assert cohort.any? { |c| true }
+    assert !cohort.none? { |c| true }
+  end
+
+  should "actually run blocks" do
+    assert_raises(RuntimeError, 'A') do
+      Citizen.big_cohort(:birthdate => @date_range).all? { |c| raise 'A' }
+    end
+    assert_raises(RuntimeError, 'B') do
+      Citizen.big_cohort(:birthdate => @date_range).any? { |c| raise 'B' }
+    end
+    assert_raises(RuntimeError, 'C') do
+      Citizen.big_cohort(:birthdate => @date_range).none? { |c| raise 'C' }
+    end
+  end
+
   should "only show the count in the json representation" do
     cohort = Citizen.big_cohort :birthdate => @date_range, :favorite_color => 'heliotrope'
     assert_equal({ :members => 9 }.to_json, cohort.to_json)

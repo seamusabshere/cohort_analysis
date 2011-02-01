@@ -92,6 +92,15 @@ module CohortScope
       { :members => count }.to_json
     end
 
+    # sabshere 2/1/11 ActiveRecord does this for #any? but not for #none?
+    def none?(&blk)
+      if block_given?
+        to_a.none? &blk
+      else
+        super
+      end
+    end
+
     def inspect
       "<Massive ActiveRecord scope with #{count} members>"
     end
