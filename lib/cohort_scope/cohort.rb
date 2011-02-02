@@ -86,6 +86,9 @@ module CohortScope
     def __getobj__
       @_ch_obj
     end
+    def __setobj__(obj)
+      @_ch_obj = obj
+    end
 
     # sabshere 2/1/11 overriding as_json per usual doesn't seem to work
     def to_json(*)
