@@ -92,7 +92,11 @@ module CohortScope
 
     # sabshere 2/1/11 overriding as_json per usual doesn't seem to work
     def to_json(*)
-      { :members => count }.to_json
+      as_json.to_json
+    end
+    
+    def as_json(*)
+      { :members => count }
     end
 
     # sabshere 2/1/11 ActiveRecord does this for #any? but not for #none?

@@ -44,6 +44,11 @@ class TestCohortScope < Test::Unit::TestCase
     cohort = Citizen.big_cohort :birthdate => @date_range, :favorite_color => 'heliotrope'
     assert_equal "<Massive ActiveRecord scope with 9 members>", cohort.inspect
   end
+  
+  should "not get fooled into revealing all of its members by a parent's #to_hash" do
+    cohort = Citizen.big_cohort :birthdate => @date_range, :favorite_color => 'heliotrope'
+    assert_equal '{"c":{"members":9}}', { :c => cohort }.to_hash.to_json
+  end
 
   should "retain the scope's original behavior" do
     cohort = Citizen.big_cohort :birthdate => @date_range, :favorite_color => 'heliotrope'
