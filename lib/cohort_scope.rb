@@ -4,6 +4,7 @@ require 'active_support/version'
 
 require 'active_support/core_ext/module/delegation' if ActiveSupport::VERSION::MAJOR == 3
 
+require 'cohort_scope/version'
 require 'cohort_scope/cohort'
 require 'cohort_scope/big_cohort'
 require 'cohort_scope/strict_cohort'
