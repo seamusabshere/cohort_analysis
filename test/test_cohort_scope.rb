@@ -84,6 +84,12 @@ class TestCohortScope < Test::Unit::TestCase
       assert cohort.all? { |m| @date_range.include? m.birthdate }
     end
     
+    should "treat arrays in conditions just like ActiveRecord would (i.e., using OR)" do
+      assert_equal 3, Citizen.big_cohort({:favorite_color => 'blue'}, 0).count
+      assert_equal 1, Citizen.big_cohort({:favorite_color => 'heliotrope'}, 0).count
+      assert_equal 4, Citizen.big_cohort({:favorite_color => ['heliotrope', 'blue']}, 0).count
+    end
+    
     should "raise if an OrderedHash is given to big_cohort" do
       assert_raises(ArgumentError) {
         Citizen.big_cohort ActiveSupport::OrderedHash.new
