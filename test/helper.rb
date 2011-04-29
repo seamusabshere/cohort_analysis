@@ -2,8 +2,6 @@ require 'rubygems'
 require 'bundler'
 Bundler.setup
 require 'test/unit'
-require 'shoulda'
-require 'logger'
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 require 'cohort_scope'
@@ -11,36 +9,39 @@ require 'cohort_scope'
 class Test::Unit::TestCase
 end
 
-$logger = Logger.new 'test/test.log' #STDOUT
-ActiveSupport::Notifications.subscribe do |*args|
-  event = ActiveSupport::Notifications::Event.new(*args)
-  $logger.debug "#{event.payload[:name]} (#{event.duration}) #{event.payload[:sql]}"
-end
+# require 'logger'
+# ActiveRecord::Base.logger = Logger.new($stderr)
 
 ActiveRecord::Base.establish_connection(
-  'adapter' => 'sqlite3',
-  'database' => ':memory:'
+  'adapter' => 'mysql',
+  'database' => 'test_cohort_scope',
+  'username' => 'root',
+  'password' => 'password'
 )
 
-ActiveRecord::Schema.define(:version => 20090819143429) do
-  create_table 'citizens', :force => true do |t|
-    t.date 'birthdate'
-    t.string 'favorite_color'
-    t.integer 'teeth'
-  end
-  create_table 'houses', :force => true do |t|
-    t.string 'period'
-    t.string 'address'
-    t.integer 'storeys'
-  end
-  create_table 'styles', :force => true do |t|
-    t.string 'period'
-    t.string 'name'
-  end
-  create_table 'residents', :force => true do |t|
-    t.integer 'house_id'
-    t.string 'name'
-  end
+c = ActiveRecord::Base.connection
+c.create_table 'citizens', :force => true do |t|
+  t.date 'birthdate'
+  t.string 'favorite_color'
+  t.integer 'teeth'
+end
+c.create_table 'houses', :force => true do |t|
+  t.string 'period_id'
+  t.string 'address'
+  t.integer 'storeys'
+end
+c.create_table 'periods', :force => true, :id => false do |t|
+  t.string 'name'
+end
+c.execute "ALTER TABLE periods ADD PRIMARY KEY (name)"
+c.create_table 'styles', :force => true, :id => false do |t|
+  t.string 'name'
+  t.string 'period_id'
+end
+c.execute "ALTER TABLE styles ADD PRIMARY KEY (name)"
+c.create_table 'residents', :force => true do |t|
+  t.integer 'house_id'
+  t.string 'name'
 end
 
 class Citizen < ActiveRecord::Base
@@ -66,27 +67,46 @@ end
   Citizen.create! :birthdate => birthdate, :favorite_color => favorite_color, :teeth => teeth
 end
 
-class Style < ActiveRecord::Base
-  extend CohortScope
-  self.minimum_cohort_size = 3
+class Period < ActiveRecord::Base
+  set_primary_key :name
+  has_many :styles
   has_many :houses
-end
-class House < ActiveRecord::Base
-  belongs_to :style, :foreign_key => 'period', :primary_key => 'period'
-  has_one :resident
-end
-class Resident < ActiveRecord::Base
-  has_one :house
+  
+  # hack to make sure rails doesn't protect the foreign key columns
+  self._protected_attributes = BlackList.new
 end
 
-Style.create! :period => 'arts and crafts', :name => 'classical revival'
-Style.create! :period => 'arts and crafts', :name => 'gothic'
-Style.create! :period => 'arts and crafts', :name => 'art deco'
-Style.create! :period => 'victorian', :name => 'stick-eastlake'
-Style.create! :period => 'victorian', :name => 'queen anne'
-h1 = House.create! :period => 'arts and crafts', :address => '123 Maple', :storeys => 1
-h2 = House.create! :period => 'arts and crafts', :address => '223 Walnut', :storeys => 2
-h3 = House.create! :period => 'victorian', :address => '323 Pine', :storeys => 2
+class Style < ActiveRecord::Base
+  set_primary_key :name
+  extend CohortScope
+  self.minimum_cohort_size = 3
+  belongs_to :period
+  has_many :houses, :through => :period, :foreign_key => 'name'
+  
+  # hack to make sure rails doesn't protect the foreign key columns
+  self._protected_attributes = BlackList.new
+end
+
+class House < ActiveRecord::Base
+  belongs_to :period
+  has_many :styles, :through => :period
+  has_one :resident
+end
+
+class Resident < ActiveRecord::Base
+  belongs_to :house
+end
+
+p1 = Period.create! :name => 'arts and crafts'
+p2 = Period.create! :name => 'victorian'
+Style.create! :period => p1, :name => 'classical revival'
+Style.create! :period => p1, :name => 'gothic'
+Style.create! :period => p1, :name => 'art deco'
+Style.create! :period => p2, :name => 'stick-eastlake'
+Style.create! :period => p2, :name => 'queen anne'
+h1 = House.create! :period => p1, :address => '123 Maple', :storeys => 1
+h2 = House.create! :period => p1, :address => '223 Walnut', :storeys => 2
+h3 = House.create! :period => p2, :address => '323 Pine', :storeys => 2
 Resident.create! :house => h1, :name => 'Bob'
 Resident.create! :house => h2, :name => 'Rob'
 Resident.create! :house => h3, :name => 'Gob'

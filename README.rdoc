@@ -2,14 +2,18 @@
 
 Provides cohorts (in the form of ActiveRecord scopes) that dynamically widen until they contain a certain number of records.
 
-* <tt>big_cohort</tt> widens by finding the constraint that eliminates the most records and removing it.
-* <tt>strict_cohort</tt> widens by eliminating constraints in order.
+* <tt>big_cohort</tt> widens by successively removing what it finds to be the most restrictive constraint until it reaches the minimum number of records
+* <tt>strict_cohort</tt> widens by eliminating constraints in order until it reaches the minimum number of records
 
-= Real-world use
+== Changes 0.1.x vs. 0.2.x
+
+No longer "flattens" or "sanitizes" constraints by turning records into integer IDs, etc. You should pass in exactly what you would pass into a normal ActiveRecord relation/scope.
+
+== Real-world use
 
 This has been at use at http://carbon.brighterplanet.com since April 2010, where it helps sift through climate data to come up with meaningful emissions calculations.
 
-= Quick start
+== Quick start
 
 Let's pretend the U.S. Census provided information about birthday and favorite color:
 
@@ -28,20 +32,17 @@ Now I need to run a calculation that ideally uses birthday and favorite color, b
 
 What if my calculation privileges favorite color? In other words, if you can't give me a cohort of minimum size within the birthday constraint, at least give me one where everybody loves heliotrope:
 
-  ordered_constraints = ActiveSupport::OrderedHash.new
-  ordered_constraints[:favorite_color] = 'heliotrope'
-  ordered_constraints[:birthdate] = (Date.parse('1980-01-01')..Date.parse('1990-01-01'))
+  ordered_constraints = []
+  ordered_constraints << [:favorite_color, 'heliotrope']
+  ordered_constraints << [:birthdate, (Date.parse('1980-01-01')..Date.parse('1990-01-01'))]
 
-  Citizen.strict_cohort favorite_color_matters_most
+  Citizen.strict_cohort *favorite_color_matters_most
   # => [... a cohort of at least 1,000 records (otherwise it's empty),
             where everybody's favorite color IS heliotrope
             and everybody's birthday MAY be between 1980 and 1990 ...]
 
-= Wishlist
-
-* support for ruby 1.9's implicitly ordered hashes
-* support for constraining on <tt>IS NULL</tt> or <tt>IS NOT NULL</tt>
+== Wishlist
 
 == Copyright
 
-Copyright (c) 2010 Seamus Abshere and Andy Rossmeissl. See LICENSE for details.
+Copyright (c) 2011 Seamus Abshere and Andy Rossmeissl. See LICENSE for details.
