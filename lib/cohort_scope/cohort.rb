@@ -7,7 +7,7 @@ module CohortScope
       # Recursively look for a scope that meets the constraints and is at least <tt>minimum_cohort_size</tt>.
       def create(active_record, constraints, minimum_cohort_size)
         if constraints.none? # failing base case
-          empty_scope = active_record.scoped.where '1 = 2'
+          empty_scope = active_record.scoped.where Arel::Nodes::Equality.new(1,2)
           return new(empty_scope)
         end
 
@@ -45,6 +45,30 @@ module CohortScope
     def none?(&blk)
       if block_given?
         to_a.none? &blk
+      else
+        super
+      end
+    end
+    
+    def where_value_nodes
+      __getobj__.instance_variable_get(:@where_values)
+    end
+    
+    def active_record
+      __getobj__.klass
+    end
+    
+    def +(other)
+      case other
+      when Cohort
+        combined_conditions = (where_value_nodes + other.where_value_nodes).inject(nil) do |memo, node|
+          if memo.nil?
+            node
+          else
+            memo.or(node)
+          end
+        end
+        Cohort.new active_record.where(combined_conditions)
       else
         super
       end

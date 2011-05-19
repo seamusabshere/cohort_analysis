@@ -82,7 +82,20 @@ class TestCohortScope < Test::Unit::TestCase
     assert_kind_of Citizen, cohort.last
     assert_kind_of Citizen, cohort.where(:teeth => 31).first
   end
-    
+  
+  def test_011_combine_scopes_with_or
+    nobody = Citizen.big_cohort({:favorite_color => 'oaisdjaoisjd'}, :minimum_cohort_size => 1)
+    assert_equal 0, nobody.count
+    people_who_love_heliotrope_are_from_the_fifties = Citizen.big_cohort({:favorite_color => 'heliotrope'}, :minimum_cohort_size => 1)
+    assert_equal 1, people_who_love_heliotrope_are_from_the_fifties.count
+    assert people_who_love_heliotrope_are_from_the_fifties.none? { |c| @date_range.include? c.birthdate }
+    their_children_are_born_in_the_eighties = Citizen.big_cohort({:birthdate => @date_range}, :minimum_cohort_size => 1)
+    assert_equal 9, their_children_are_born_in_the_eighties.count
+    everybody = (people_who_love_heliotrope_are_from_the_fifties + their_children_are_born_in_the_eighties + nobody)
+    assert_kind_of CohortScope::Cohort, everybody
+    assert_equal 10, everybody.count
+  end
+  
   private
   
   def style
