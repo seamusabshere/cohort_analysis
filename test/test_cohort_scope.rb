@@ -96,6 +96,12 @@ class TestCohortScope < Test::Unit::TestCase
     assert_equal 10, everybody.count
   end
   
+  def test_012_to_cohort
+    relation = Citizen.big_cohort({:favorite_color => 'heliotrope'}, :minimum_cohort_size => 1).where(:birthdate => @date_range)
+    assert_equal [], relation.as_json
+    assert_equal({ :members => 0 }, relation.to_cohort.as_json)
+  end
+  
   private
   
   def style

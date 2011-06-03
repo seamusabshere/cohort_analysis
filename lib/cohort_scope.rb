@@ -55,4 +55,12 @@ module CohortScope
     constraints = args
     StrictCohort.create self, constraints, (options[:minimum_cohort_size] || minimum_cohort_size)
   end
+  
+  module ActiveRecordRelationExt
+    def to_cohort
+      Cohort.new self
+    end
+  end
 end
+
+::ActiveRecord::Relation.send :include, ::CohortScope::ActiveRecordRelationExt
