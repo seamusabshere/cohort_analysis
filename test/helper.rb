@@ -10,10 +10,10 @@ class Test::Unit::TestCase
 end
 
 # require 'logger'
-# ActiveRecord::Base.logger = Logger.new($stderr)
+# ActiveRecord::Base.logger = Logger.new($stdout)
 
 ActiveRecord::Base.establish_connection(
-  'adapter' => 'mysql',
+  'adapter' => 'mysql2',
   'database' => 'test_cohort_scope',
   'username' => 'root',
   'password' => 'password'
@@ -64,7 +64,7 @@ end
   [ '1985-03-02', nil, 27 ],
   [ '1982-05-01', nil, 28 ]
 ].each do |birthdate, favorite_color, teeth|
-  Citizen.create! :birthdate => birthdate, :favorite_color => favorite_color, :teeth => teeth
+  c = Citizen.new; c.birthdate = birthdate; c.favorite_color = favorite_color; c.teeth = teeth; c.save!
 end
 
 class Period < ActiveRecord::Base
@@ -97,13 +97,13 @@ class Resident < ActiveRecord::Base
   belongs_to :house
 end
 
-p1 = Period.create! :name => 'arts and crafts'
-p2 = Period.create! :name => 'victorian'
-Style.create! :period => p1, :name => 'classical revival'
-Style.create! :period => p1, :name => 'gothic'
-Style.create! :period => p1, :name => 'art deco'
-Style.create! :period => p2, :name => 'stick-eastlake'
-Style.create! :period => p2, :name => 'queen anne'
+p1 = Period.new; p1.name = 'arts and crafts'; p1.save!
+p2 = Period.new; p2.name = 'victorian'; p2.save!
+s1 = Style.new; s1.period = p1; s1.name = 'classical revival'; s1.save!
+s2 = Style.new; s2.period = p1; s2.name = 'gothic'; s2.save!
+s3 = Style.new; s3.period = p1; s3.name = 'art deco'; s3.save!
+s4 = Style.new; s4.period = p2; s4.name = 'stick-eastlake'; s4.save!
+s5 = Style.new; s5.period = p2; s5.name = 'queen anne'; s5.save!
 h1 = House.create! :period => p1, :address => '123 Maple', :storeys => 1
 h2 = House.create! :period => p1, :address => '223 Walnut', :storeys => 2
 h3 = House.create! :period => p2, :address => '323 Pine', :storeys => 2

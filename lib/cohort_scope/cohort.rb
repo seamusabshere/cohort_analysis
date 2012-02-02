@@ -2,13 +2,13 @@ require 'delegate'
 
 module CohortScope
   class Cohort < ::Delegator
-
     class << self
       # Recursively look for a scope that meets the constraints and is at least <tt>minimum_cohort_size</tt>.
       def create(active_record, constraints, minimum_cohort_size)
         if constraints.none? # failing base case
-          empty_scope = active_record.scoped.where Arel::Nodes::Equality.new(1,2)
-          return new(empty_scope)
+          impossible_cohort = new(active_record.scoped.where(IMPOSSIBLE_CONDITION))
+          impossible_cohort.impossible!
+          return impossible_cohort
         end
 
         constrained_scope = active_record.scoped.where CohortScope.conditions_for(constraints)
@@ -20,6 +20,8 @@ module CohortScope
         end
       end
     end
+    
+    IMPOSSIBLE_CONDITION = ::Arel::Nodes::Equality.new(1,2)
 
     def initialize(obj)
       super
@@ -40,9 +42,23 @@ module CohortScope
     def as_json(*)
       { :members => count }
     end
+    
+    def impossible!
+      @impossible = true
+    end
+    
+    def impossible?
+      @impossible == true
+    end
+    
+    def any?
+      return false if impossible?
+      super
+    end
 
     # sabshere 2/1/11 ActiveRecord does this for #any? but not for #none?
     def none?(&blk)
+      return true if impossible?
       if block_given?
         to_a.none? &blk
       else
@@ -75,7 +91,7 @@ module CohortScope
     end
 
     def inspect
-      "<Cohort scope with #{count} members>"
+      "#<#{self.class.name} with #{count} members>"
     end
   end
 end

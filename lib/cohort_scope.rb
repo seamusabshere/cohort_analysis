@@ -1,17 +1,11 @@
 require 'active_record'
+require 'active_support/core_ext'
 
-require 'active_support'
-require 'active_support/version'
-if ActiveSupport::VERSION::MAJOR == 3
-  require 'active_support/json'
-  require 'active_support/core_ext/hash'
-end
+require 'cohort_scope/cohort'
+require 'cohort_scope/big_cohort'
+require 'cohort_scope/strict_cohort'
 
 module CohortScope
-  autoload :Cohort, 'cohort_scope/cohort'
-  autoload :BigCohort, 'cohort_scope/big_cohort'
-  autoload :StrictCohort, 'cohort_scope/strict_cohort'
-  
   def self.extended(klass)
     klass.class_eval do
       class << self

@@ -28,10 +28,9 @@ class TestCohortScope < Test::Unit::TestCase
   end
   
   # should this even work in theory?
-  def test_002b_simplified_joins
-    flunk
-    assert_equal 3, Style.big_cohort(:houses => [house1]).length
-  end
+  # def test_002b_simplified_joins
+  #   assert_equal 3, Style.big_cohort(:houses => [house1]).length
+  # end
 
   def test_003_redefine_any_query_method
     cohort = Citizen.big_cohort(:birthdate => @date_range)
@@ -69,7 +68,7 @@ class TestCohortScope < Test::Unit::TestCase
   
   def test_008_short_inspect
     cohort = Citizen.big_cohort :birthdate => @date_range, :favorite_color => 'heliotrope'
-    assert_equal "<Cohort scope with 9 members>", cohort.inspect
+    assert_equal "#<CohortScope::BigCohort with 9 members>", cohort.inspect
   end
   
   def test_009_not_reveal_itself_in_to_hash
