@@ -101,6 +101,20 @@ class TestCohortScope < Test::Unit::TestCase
     assert_equal({ :members => 0 }, relation.to_cohort.as_json)
   end
   
+  def test_013_count_is_forced
+    cohort = Citizen.big_cohort(:birthdate => @date_range)
+
+    cohort.count = 0
+    assert !cohort.any?
+    assert cohort.none?
+    assert cohort.empty?
+
+    cohort.count = 1
+    assert cohort.any?
+    assert !cohort.none?
+    assert !cohort.empty?
+  end
+  
   private
   
   def style

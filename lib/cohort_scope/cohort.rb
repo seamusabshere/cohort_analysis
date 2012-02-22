@@ -6,15 +6,17 @@ module CohortScope
       # Recursively look for a scope that meets the constraints and is at least <tt>minimum_cohort_size</tt>.
       def create(active_record, constraints, minimum_cohort_size)
         if constraints.none? # failing base case
-          impossible_cohort = new(active_record.scoped.where(IMPOSSIBLE_CONDITION))
-          impossible_cohort.impossible!
-          return impossible_cohort
+          cohort = new active_record.scoped.where(IMPOSSIBLE_CONDITION)
+          cohort.count = 0
+          return cohort
         end
 
         constrained_scope = active_record.scoped.where CohortScope.conditions_for(constraints)
 
-        if constrained_scope.count >= minimum_cohort_size
-          new constrained_scope
+        if (count = constrained_scope.count) >= minimum_cohort_size
+          cohort = new constrained_scope
+          cohort.count = count
+          cohort
         else
           create active_record, reduce_constraints(active_record, constraints), minimum_cohort_size
         end
@@ -34,6 +36,14 @@ module CohortScope
       @_ch_obj = obj
     end
 
+    def count=(int)
+      @count = int
+    end
+    
+    def count
+      @count ||= super
+    end
+
     # sabshere 2/1/11 overriding as_json per usual doesn't seem to work
     def to_json(*)
       as_json.to_json
@@ -43,23 +53,21 @@ module CohortScope
       { :members => count }
     end
     
-    def impossible!
-      @impossible = true
+    def empty?
+      count == 0
     end
-    
-    def impossible?
-      @impossible == true
-    end
-    
+        
     def any?
-      return false if impossible?
+      return false if count == 0
+      return true if !block_given? and count > 0
       super
     end
 
-    # sabshere 2/1/11 ActiveRecord does this for #any? but not for #none?
     def none?(&blk)
-      return true if impossible?
+      return true if count == 0
+      return false if !block_given? and count > 0
       if block_given?
+        # sabshere 2/1/11 ActiveRecord does this for #any? but not for #none?
         to_a.none? &blk
       else
         super
