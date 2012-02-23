@@ -4,6 +4,7 @@ require 'active_support/core_ext'
 require 'cohort_scope/cohort'
 require 'cohort_scope/big_cohort'
 require 'cohort_scope/strict_cohort'
+require 'cohort_scope/active_record_relation_to_cohort'
 
 module CohortScope
   def self.extended(klass)
@@ -49,12 +50,4 @@ module CohortScope
     constraints = args
     StrictCohort.create self, constraints, (options[:minimum_cohort_size] || minimum_cohort_size)
   end
-  
-  module ActiveRecordRelationExt
-    def to_cohort
-      Cohort.new self
-    end
-  end
 end
-
-::ActiveRecord::Relation.send :include, ::CohortScope::ActiveRecordRelationExt
