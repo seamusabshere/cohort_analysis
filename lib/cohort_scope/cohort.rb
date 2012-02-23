@@ -1,24 +1,44 @@
 require 'delegate'
-
 module CohortScope
   class Cohort < ::Delegator
+    class Stub
+      def initialize(cohort_class, relation, constraints, minimum_cohort_size)
+        @cohort_class = cohort_class
+        @relation = relation
+        @constraints = constraints
+        @minimum_cohort_size = minimum_cohort_size
+      end
+      def respond_to?(*)
+        true
+      end
+      def method_missing(method_id, *args, &blk)
+        cohort = @cohort_class.resolve @relation, @constraints, @minimum_cohort_size
+        @delegator.__setobj__ cohort
+        @delegator.send method_id, *args, &blk
+      end
+    end
+    
     class << self
+      def stub(relation, constraints, minimum_cohort_size)
+        cohort = new Stub.new(self, relation, constraints, minimum_cohort_size)
+        cohort.__getobj__.instance_variable_set(:@delegator, cohort)
+        cohort
+      end
+
       # Recursively look for a scope that meets the constraints and is at least <tt>minimum_cohort_size</tt>.
-      def create(active_record, constraints, minimum_cohort_size)
+      def resolve(relation, constraints, minimum_cohort_size)
         if constraints.none? # failing base case
-          cohort = new active_record.scoped.where(IMPOSSIBLE_CONDITION)
+          cohort = new relation.where(IMPOSSIBLE_CONDITION)
           cohort.count = 0
           return cohort
         end
-
-        constrained_scope = active_record.scoped.where CohortScope.conditions_for(constraints)
-
+        constrained_scope = relation.where CohortScope.conditions_for(constraints)
         if (count = constrained_scope.count) >= minimum_cohort_size
           cohort = new constrained_scope
           cohort.count = count
           cohort
         else
-          create active_record, reduce_constraints(active_record, constraints), minimum_cohort_size
+          resolve relation, reduce_constraints(relation, constraints), minimum_cohort_size
         end
       end
     end
@@ -27,13 +47,17 @@ module CohortScope
 
     def initialize(obj)
       super
-      @_ch_obj = obj
+      @stub_or_relation = obj
     end
     def __getobj__
-      @_ch_obj
+      @stub_or_relation
     end
     def __setobj__(obj)
-      @_ch_obj = obj
+      @stub_or_relation = obj
+    end
+    
+    def stub?
+      __getobj__.is_a?(Stub)
     end
 
     def count=(int)
@@ -42,6 +66,10 @@ module CohortScope
     
     def count
       @count ||= super
+    end
+    
+    def size
+      count
     end
 
     # sabshere 2/1/11 overriding as_json per usual doesn't seem to work
@@ -63,36 +91,17 @@ module CohortScope
       super
     end
 
-    def none?(&blk)
+    def none?
       return true if count == 0
       return false if !block_given? and count > 0
-      if block_given?
-        # sabshere 2/1/11 ActiveRecord does this for #any? but not for #none?
-        to_a.none? &blk
-      else
-        super
-      end
-    end
-    
-    def where_value_nodes
-      __getobj__.instance_variable_get(:@where_values)
-    end
-    
-    def active_record
-      __getobj__.klass
+      super
     end
     
     def +(other)
       case other
       when Cohort
-        combined_conditions = (where_value_nodes + other.where_value_nodes).inject(nil) do |memo, node|
-          if memo.nil?
-            node
-          else
-            memo.or(node)
-          end
-        end
-        Cohort.new active_record.where(combined_conditions)
+        combined_conditions = (constraints + other.constraints).map(&:to_sql).join(' OR ')
+        Cohort.new __getobj__.klass.where(combined_conditions)
       else
         super
       end

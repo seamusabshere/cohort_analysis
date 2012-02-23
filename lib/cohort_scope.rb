@@ -27,7 +27,7 @@ module CohortScope
   # Find the biggest scope possible by removing constraints <b>in any order</b>.
   # Returns an empty scope if it can't meet the minimum scope size.
   def big_cohort(constraints, options = {})
-    BigCohort.create self, constraints, (options[:minimum_cohort_size] || minimum_cohort_size)
+    BigCohort.stub scoped, constraints, (options[:minimum_cohort_size] || minimum_cohort_size)
   end
 
   # Find the first acceptable scope by removing constraints <b>in strict order</b>, starting with the last constraint.
@@ -48,6 +48,6 @@ module CohortScope
     args = args.dup
     options = args.last.is_a?(::Hash) ? args.pop : {}
     constraints = args
-    StrictCohort.create self, constraints, (options[:minimum_cohort_size] || minimum_cohort_size)
+    StrictCohort.stub scoped, constraints, (options[:minimum_cohort_size] || minimum_cohort_size)
   end
 end

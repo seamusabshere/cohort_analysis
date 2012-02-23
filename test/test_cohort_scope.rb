@@ -90,7 +90,7 @@ class TestCohortScope < Test::Unit::TestCase
     assert people_who_love_heliotrope_are_from_the_fifties.none? { |c| @date_range.include? c.birthdate }
     their_children_are_born_in_the_eighties = Citizen.big_cohort({:birthdate => @date_range}, :minimum_cohort_size => 1)
     assert_equal 9, their_children_are_born_in_the_eighties.count
-    everybody = (people_who_love_heliotrope_are_from_the_fifties + their_children_are_born_in_the_eighties + nobody)
+    everybody = people_who_love_heliotrope_are_from_the_fifties + their_children_are_born_in_the_eighties + nobody
     assert_kind_of CohortScope::Cohort, everybody
     assert_equal 10, everybody.count
   end
@@ -113,6 +113,13 @@ class TestCohortScope < Test::Unit::TestCase
     assert cohort.any?
     assert !cohort.none?
     assert !cohort.empty?
+  end
+  
+  def test_014_lazy_loading
+    cohort = Citizen.big_cohort(:birthdate => @date_range)
+    assert cohort.stub?
+    assert cohort.any?
+    assert !cohort.stub?
   end
   
   private
