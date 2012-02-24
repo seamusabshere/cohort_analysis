@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.email       = ["seamus@abshere.net"]
   s.homepage    = "https://github.com/seamusabshere/cohort_scope"
   s.summary     = %Q{Provides cohorts (in the form of ActiveRecord scopes) that dynamically widen until they contain a certain number of records.}
-  s.description = %Q{Provides big_cohort, which widens by finding the constraint that eliminates the most records and removing it. Also provides strict_cohort, which widens by eliminating constraints in order.}
+  s.description = %Q{Provides big_cohort, which widens by finding the characteristic that eliminates the most records and removing it. Also provides strict_cohort, which widens by eliminating characteristics in order.}
 
   s.rubyforge_project = "cohort_scope"
 

@@ -16,7 +16,7 @@ class TestStrictCohort < Test::Unit::TestCase
     assert_equal 1, cohort.count
   end
 
-  def test_003_seek_cohort_by_discarding_constraints_in_order
+  def test_003_seek_cohort_by_discarding_characteristics_in_order
     favorite_color_matters_most = [ [:favorite_color, 'heliotrope'], [:birthdate, @date_range] ]
     birthdate_matters_most =      [ [:birthdate, @date_range], [:favorite_color, 'heliotrope'] ]
 

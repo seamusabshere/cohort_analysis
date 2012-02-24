@@ -2,43 +2,43 @@ require 'delegate'
 module CohortScope
   class Cohort < ::Delegator
     class Stub
-      def initialize(cohort_class, relation, constraints, minimum_cohort_size)
+      def initialize(cohort_class, relation, characteristics, minimum_cohort_size)
         @cohort_class = cohort_class
         @relation = relation
-        @constraints = constraints
+        @characteristics = characteristics
         @minimum_cohort_size = minimum_cohort_size
       end
       def respond_to?(*)
         true
       end
       def method_missing(method_id, *args, &blk)
-        cohort = @cohort_class.resolve @relation, @constraints, @minimum_cohort_size
+        cohort = @cohort_class.resolve @relation, @characteristics, @minimum_cohort_size
         @delegator.__setobj__ cohort
         @delegator.send method_id, *args, &blk
       end
     end
     
     class << self
-      def stub(relation, constraints, minimum_cohort_size)
-        cohort = new Stub.new(self, relation, constraints, minimum_cohort_size)
+      def stub(relation, characteristics, minimum_cohort_size)
+        cohort = new Stub.new(self, relation, characteristics, minimum_cohort_size)
         cohort.__getobj__.instance_variable_set(:@delegator, cohort)
         cohort
       end
 
-      # Recursively look for a scope that meets the constraints and is at least <tt>minimum_cohort_size</tt>.
-      def resolve(relation, constraints, minimum_cohort_size)
-        if constraints.none? # failing base case
+      # Recursively look for a scope that meets the characteristics and is at least <tt>minimum_cohort_size</tt>.
+      def resolve(relation, characteristics, minimum_cohort_size)
+        if characteristics.none? # failing base case
           cohort = new relation.where(IMPOSSIBLE_CONDITION)
           cohort.count = 0
           return cohort
         end
-        constrained_scope = relation.where CohortScope.conditions_for(constraints)
+        constrained_scope = relation.where CohortScope.conditions_for(characteristics)
         if (count = constrained_scope.count) >= minimum_cohort_size
           cohort = new constrained_scope
           cohort.count = count
           cohort
         else
-          resolve relation, reduce_constraints(relation, constraints), minimum_cohort_size
+          resolve relation, reduce_characteristics(relation, characteristics), minimum_cohort_size
         end
       end
     end

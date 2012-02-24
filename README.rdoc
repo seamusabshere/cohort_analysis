@@ -2,12 +2,12 @@
 
 Provides cohorts (in the form of ActiveRecord scopes) that dynamically widen until they contain a certain number of records.
 
-* <tt>big_cohort</tt> widens by successively removing what it finds to be the most restrictive constraint until it reaches the minimum number of records
-* <tt>strict_cohort</tt> widens by eliminating constraints in order until it reaches the minimum number of records
+* <tt>big_cohort</tt> widens by successively removing what it finds to be the most restrictive characteristic until it reaches the minimum number of records
+* <tt>strict_cohort</tt> widens by eliminating characteristics in order until it reaches the minimum number of records
 
 == Changes 0.1.x vs. 0.2.x
 
-No longer "flattens" or "sanitizes" constraints by turning records into integer IDs, etc. You should pass in exactly what you would pass into a normal ActiveRecord relation/scope.
+No longer "flattens" or "sanitizes" characteristics by turning records into integer IDs, etc. You should pass in exactly what you would pass into a normal ActiveRecord relation/scope.
 
 == Real-world use
 
@@ -28,13 +28,13 @@ Now I need to run a calculation that ideally uses birthday and favorite color, b
   # => [... a cohort of at least 1,000 records (otherwise it's empty),
             where everybody's favorite color MAY be heliotrope
             and everybody's birthday MAY be between 1980 and 1990
-            (at least one of those constraints will hold) ...]
+            (at least one of those characteristics will hold) ...]
 
-What if my calculation privileges favorite color? In other words, if you can't give me a cohort of minimum size within the birthday constraint, at least give me one where everybody loves heliotrope:
+What if my calculation privileges favorite color? In other words, if you can't give me a cohort of minimum size within the birthday characteristic, at least give me one where everybody loves heliotrope:
 
-  ordered_constraints = []
-  ordered_constraints << [:favorite_color, 'heliotrope']
-  ordered_constraints << [:birthdate, (Date.parse('1980-01-01')..Date.parse('1990-01-01'))]
+  ordered_characteristics = []
+  ordered_characteristics << [:favorite_color, 'heliotrope']
+  ordered_characteristics << [:birthdate, (Date.parse('1980-01-01')..Date.parse('1990-01-01'))]
 
   Citizen.strict_cohort *favorite_color_matters_most
   # => [... a cohort of at least 1,000 records (otherwise it's empty),
