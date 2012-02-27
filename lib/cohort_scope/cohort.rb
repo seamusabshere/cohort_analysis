@@ -1,114 +1,30 @@
-require 'delegate'
 module CohortScope
-  class Cohort < ::Delegator
-    class Stub
-      def initialize(cohort_class, relation, characteristics, minimum_cohort_size)
-        @cohort_class = cohort_class
-        @relation = relation
-        @characteristics = characteristics
-        @minimum_cohort_size = minimum_cohort_size
-      end
-      def respond_to?(*)
-        true
-      end
-      def method_missing(method_id, *args, &blk)
-        cohort = @cohort_class.resolve @relation, @characteristics, @minimum_cohort_size
-        @delegator.__setobj__ cohort
-        @delegator.send method_id, *args, &blk
-      end
-    end
-    
-    class << self
-      def stub(relation, characteristics, minimum_cohort_size)
-        cohort = new Stub.new(self, relation, characteristics, minimum_cohort_size)
-        cohort.__getobj__.instance_variable_set(:@delegator, cohort)
-        cohort
-      end
+  class Cohort < ::Arel::Nodes::Node
+    IMPOSSIBLE = '1 = 2'
 
-      # Recursively look for a scope that meets the characteristics and is at least <tt>minimum_cohort_size</tt>.
-      def resolve(relation, characteristics, minimum_cohort_size)
-        if characteristics.none? # failing base case
-          cohort = new relation.where(IMPOSSIBLE_CONDITION)
-          cohort.count = 0
-          return cohort
-        end
-        constrained_scope = relation.where CohortScope.conditions_for(characteristics)
-        if (count = constrained_scope.count) >= minimum_cohort_size
-          cohort = new constrained_scope
-          cohort.count = count
-          cohort
-        else
-          resolve relation, reduce_characteristics(relation, characteristics), minimum_cohort_size
-        end
-      end
-    end
-    
-    IMPOSSIBLE_CONDITION = ::Arel::Nodes::Equality.new(1,2)
-
-    def initialize(obj)
-      super
-      @stub_or_relation = obj
-    end
-    def __getobj__
-      @stub_or_relation
-    end
-    def __setobj__(obj)
-      @stub_or_relation = obj
-    end
-    
-    def stub?
-      __getobj__.is_a?(Stub)
+    def initialize(active_record, characteristics, minimum_cohort_size)
+      @active_record = active_record
+      @characteristics = characteristics
+      @minimum_cohort_size = minimum_cohort_size
     end
 
-    def count=(int)
-      @count = int
+    def expr
+      @expr ||= resolve
     end
-    
-    def count
-      @count ||= super
-    end
-    
-    def size
-      count
-    end
+    alias :to_sql :expr
 
-    # sabshere 2/1/11 overriding as_json per usual doesn't seem to work
-    def to_json(*)
-      as_json.to_json
-    end
-    
-    def as_json(*)
-      { :members => count }
-    end
-    
-    def empty?
-      count == 0
-    end
-        
-    def any?
-      return false if count == 0
-      return true if !block_given? and count > 0
-      super
-    end
+    private
 
-    def none?
-      return true if count == 0
-      return false if !block_given? and count > 0
-      super
-    end
-    
-    def +(other)
-      case other
-      when Cohort
-        combined_conditions = (constraints + other.constraints).map(&:to_sql).join(' OR ')
-        Cohort.new __getobj__.klass.where(combined_conditions)
+    # Recursively look for a scope that meets the characteristics and is at least <tt>minimum_cohort_size</tt>.
+    def resolve
+      if @characteristics.empty?
+        IMPOSSIBLE
+      elsif (current = @active_record.where(CohortScope.conditions_for(@characteristics))).count >= @minimum_cohort_size
+        current.constraints.inject(:and).to_sql
       else
-        super
+        @characteristics = self.class.reduce_characteristics(@active_record, @characteristics)
+        resolve
       end
-    end
-
-    def inspect
-      "#<#{self.class.name} with #{count} members>"
     end
   end
 end

@@ -18,110 +18,24 @@ class TestCohortScope < Test::Unit::TestCase
     assert Style.joins(:houses).where(:houses => { :id => [house1] }).first
   end
   
-  # confusing as hell because houses have styles according to periods, which is not accurate
-  def test_002a_complicated_cohorts_with_joins
-    assert_equal 3, Style.joins(:houses).big_cohort(:houses => { :id => [house1]}).length
-    assert_equal 3, Style.joins(:houses).big_cohort(:houses => { :id => [house1]}, :name => 'foooooooo').length
-    # these return 2, which is too small
-    assert_equal 0, Style.joins(:houses).big_cohort(:houses => { :id => [house3]}).length
-    assert_equal 0, Style.joins(:houses).big_cohort(:houses => { :id => [house3]}, :name => 'classical revival').length
-  end
-  
-  # should this even work in theory?
-  # def test_002b_simplified_joins
-  #   assert_equal 3, Style.big_cohort(:houses => [house1]).length
-  # end
-
-  def test_003_redefine_any_query_method
-    cohort = Citizen.big_cohort(:birthdate => @date_range)
-    assert cohort.all? { |c| true }
-    assert cohort.any? { |c| true }
-    assert !cohort.none? { |c| true }
-  end
-  
-  def test_004_really_run_blocks
-    assert_raises(RuntimeError, 'A') do
-      Citizen.big_cohort(:birthdate => @date_range).all? { |c| raise 'A' }
-    end
-    assert_raises(RuntimeError, 'B') do
-      Citizen.big_cohort(:birthdate => @date_range).any? { |c| raise 'B' }
-    end
-    assert_raises(RuntimeError, 'C') do
-      Citizen.big_cohort(:birthdate => @date_range).none? { |c| raise 'C' }
-    end
-  end
-  
-  def test_005_short_to_json
-    cohort = Citizen.big_cohort :birthdate => @date_range, :favorite_color => 'heliotrope'
-    assert_equal({ :members => 9 }.to_json, cohort.to_json)
-  end
-  
-  def test_006_doesnt_mess_with_active_record_json
-    non_cohort = Citizen.all
-    assert_equal non_cohort.to_a.as_json, non_cohort.as_json
-  end
-  
-  def test_007_doesnt_mess_with_active_record_inspect
-    non_cohort = Citizen.all
-    assert_equal non_cohort.to_a.inspect, non_cohort.inspect
-  end
-  
-  def test_008_short_inspect
-    cohort = Citizen.big_cohort :birthdate => @date_range, :favorite_color => 'heliotrope'
-    assert_equal "#<CohortScope::BigCohort with 9 members>", cohort.inspect
-  end
-  
-  def test_009_not_reveal_itself_in_to_hash
-    cohort = Citizen.big_cohort :birthdate => @date_range, :favorite_color => 'heliotrope'
-    assert_equal '{"c":{"members":9}}', { :c => cohort }.to_hash.to_json
-  end
-  
-  def test_010_work_as_delegator
-    cohort = Citizen.big_cohort :birthdate => @date_range, :favorite_color => 'heliotrope'
-    assert_kind_of Citizen, cohort.last
-    assert_kind_of Citizen, cohort.where(:teeth => 31).first
+  def test_002_to_sql
+    assert %r{BETWEEN.*#{@date_range.first}.*#{@date_range.last}}.match(Citizen.big_cohort(:birthdate => @date_range).to_sql)
+    assert %r{.citizens...favorite_color. = 'heliotrope'}.match(Citizen.big_cohort({:favorite_color => 'heliotrope'}, :minimum_cohort_size => 1).to_sql)
+    assert_equal %{1 = 2}, Citizen.big_cohort(:favorite_color => 'osijdfosidfj').to_sql
   end
   
   def test_011_combine_scopes_with_or
     nobody = Citizen.big_cohort({:favorite_color => 'oaisdjaoisjd'}, :minimum_cohort_size => 1)
-    assert_equal 0, nobody.count
+    assert_equal 0, Citizen.where(nobody).count
     people_who_love_heliotrope_are_from_the_fifties = Citizen.big_cohort({:favorite_color => 'heliotrope'}, :minimum_cohort_size => 1)
-    assert_equal 1, people_who_love_heliotrope_are_from_the_fifties.count
-    assert people_who_love_heliotrope_are_from_the_fifties.none? { |c| @date_range.include? c.birthdate }
+    assert_equal 1, Citizen.where(people_who_love_heliotrope_are_from_the_fifties).count
+    assert Citizen.where(people_who_love_heliotrope_are_from_the_fifties).none? { |c| @date_range.include? c.birthdate }
     their_children_are_born_in_the_eighties = Citizen.big_cohort({:birthdate => @date_range}, :minimum_cohort_size => 1)
-    assert_equal 9, their_children_are_born_in_the_eighties.count
-    everybody = people_who_love_heliotrope_are_from_the_fifties + their_children_are_born_in_the_eighties + nobody
-    assert_kind_of CohortScope::Cohort, everybody
-    assert_equal 10, everybody.count
+    assert_equal 9, Citizen.where(their_children_are_born_in_the_eighties).count
+    everybody = people_who_love_heliotrope_are_from_the_fifties.or(their_children_are_born_in_the_eighties).or(nobody)
+    assert_equal 10, Citizen.where(everybody).count
   end
-  
-  def test_012_to_cohort
-    relation = Citizen.big_cohort({:favorite_color => 'heliotrope'}, :minimum_cohort_size => 1).where(:birthdate => @date_range)
-    assert_equal [], relation.as_json
-    assert_equal({ :members => 0 }, relation.to_cohort.as_json)
-  end
-  
-  def test_013_count_is_forced
-    cohort = Citizen.big_cohort(:birthdate => @date_range)
 
-    cohort.count = 0
-    assert !cohort.any?
-    assert cohort.none?
-    assert cohort.empty?
-
-    cohort.count = 1
-    assert cohort.any?
-    assert !cohort.none?
-    assert !cohort.empty?
-  end
-  
-  def test_014_lazy_loading
-    cohort = Citizen.big_cohort(:birthdate => @date_range)
-    assert cohort.stub?
-    assert cohort.any?
-    assert !cohort.stub?
-  end
-  
   private
   
   def style

@@ -5,13 +5,9 @@ Provides cohorts (in the form of ActiveRecord scopes) that dynamically widen unt
 * <tt>big_cohort</tt> widens by successively removing what it finds to be the most restrictive characteristic until it reaches the minimum number of records
 * <tt>strict_cohort</tt> widens by eliminating characteristics in order until it reaches the minimum number of records
 
-== Changes 0.1.x vs. 0.2.x
-
-No longer "flattens" or "sanitizes" characteristics by turning records into integer IDs, etc. You should pass in exactly what you would pass into a normal ActiveRecord relation/scope.
-
 == Real-world use
 
-This has been at use at http://carbon.brighterplanet.com since April 2010, where it helps sift through climate data to come up with meaningful emissions calculations.
+This has been at use at http://impact.brighterplanet.com since April 2010, where it helps sift through climate data to come up with meaningful emissions calculations.
 
 == Quick start
 
@@ -45,4 +41,4 @@ What if my calculation privileges favorite color? In other words, if you can't g
 
 == Copyright
 
-Copyright (c) 2011 Seamus Abshere and Andy Rossmeissl. See LICENSE for details.
+Copyright (c) 2012 Brighter Planet, Inc. See LICENSE for details.

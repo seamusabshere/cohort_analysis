@@ -6,6 +6,10 @@ $LOAD_PATH.unshift(File.dirname(__FILE__))
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 require 'cohort_scope'
 
+if ::Bundler.definition.specs['ruby-debug19'].first or ::Bundler.definition.specs['ruby-debug'].first
+  require 'ruby-debug'
+end
+  
 class Test::Unit::TestCase
 end
 
