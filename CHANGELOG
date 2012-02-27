@@ -1,0 +1,13 @@
+0.3.0 / 2012-02-27
+
+* Now my_cohort = Person.cohort({:favorite_color => 'heliotrope', :birthdate => @date_range}, :importance => [:birthdate, :favorite_color]) will return a Arel::Nodes::Node which can be combined like Person.where(my_cohort.and("gender = 'male")) - it does NOT return a "scope" like before.
+
+* Refactor to take advantage of ARel.
+
+0.2.0
+
+* No longer "flattens" or "sanitizes" characteristics by turning records into integer IDs, etc. You should pass in exactly what you would pass into a normal ActiveRecord relation/scope.
+
+0.1.0
+
+* First version!
