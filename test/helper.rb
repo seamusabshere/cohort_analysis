@@ -28,6 +28,7 @@ c.create_table 'citizens', :force => true do |t|
   t.date 'birthdate'
   t.string 'favorite_color'
   t.integer 'teeth'
+  t.string 'gender'
 end
 c.create_table 'houses', :force => true do |t|
   t.string 'period_id'
@@ -55,20 +56,20 @@ class Citizen < ActiveRecord::Base
 end
 
 [
-  [ '1982-09-29', 'blue', 31 ],
-  [ '1954-12-20', 'heliotrope', 32 ],
-  [ '1983-10-28', 'green', 24 ],
-  [ '1984-02-14', 'firetruck red', 27 ],
-  [ '1955-07-21', 'blue', 27 ],
-  [ '1983-06-08', 'purple', 42 ],
-  [ '1982-04-27', 'black', 24 ],
-  [ '1984-07-16', 'blue', 29 ],
-  [ '1975-02-18', 'green', 18 ],
-  [ '1988-02-01', nil, 31 ],
-  [ '1985-03-02', nil, 27 ],
-  [ '1982-05-01', nil, 28 ]
-].each do |birthdate, favorite_color, teeth|
-  c = Citizen.new; c.birthdate = birthdate; c.favorite_color = favorite_color; c.teeth = teeth; c.save!
+  [ '1982-09-29', 'blue', 31, 'boy' , 'boy' ],
+  [ '1954-12-20', 'heliotrope', 32 , 'boy' ],
+  [ '1983-10-28', 'green', 24 , 'girl' ],
+  [ '1984-02-14', 'firetruck red', 27 , 'boy' ],
+  [ '1955-07-21', 'blue', 27 , 'girl' ],
+  [ '1983-06-08', 'purple', 42 , 'boy' ],
+  [ '1982-04-27', 'black', 24 , 'girl' ],
+  [ '1984-07-16', 'blue', 29 , 'boy' ],
+  [ '1975-02-18', 'green', 18 , 'boy' ],
+  [ '1988-02-01', nil, 31 , 'boy' ],
+  [ '1985-03-02', nil, 27 , 'boy' ],
+  [ '1982-05-01', nil, 28, 'girl' ]
+].each do |birthdate, favorite_color, teeth, gender|
+  c = Citizen.new; c.birthdate = birthdate; c.favorite_color = favorite_color; c.teeth = teeth; c.gender = gender; c.save!
 end
 
 class Period < ActiveRecord::Base

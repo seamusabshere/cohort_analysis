@@ -3,7 +3,7 @@ require 'helper'
 class TestStrictCohort < Test::Unit::TestCase
   def setup
     Citizen.minimum_cohort_size = 3
-    @date_range = (Date.parse('1980-01-01')..Date.parse('1990-01-01'))
+    @eighties = (Date.parse('1980-01-01')..Date.parse('1990-01-01'))
   end
 
   def test_001_empty
@@ -17,8 +17,8 @@ class TestStrictCohort < Test::Unit::TestCase
   end
 
   def test_003_seek_cohort_by_discarding_characteristics_in_order
-    favorite_color_matters_most = [ [:favorite_color, 'heliotrope'], [:birthdate, @date_range] ]
-    birthdate_matters_most =      [ [:birthdate, @date_range], [:favorite_color, 'heliotrope'] ]
+    favorite_color_matters_most = [ [:favorite_color, 'heliotrope'], [:birthdate, @eighties] ]
+    birthdate_matters_most =      [ [:birthdate, @eighties], [:favorite_color, 'heliotrope'] ]
 
     cohort = Citizen.strict_cohort *favorite_color_matters_most
     assert_equal 0, Citizen.where(cohort).count
@@ -33,8 +33,8 @@ class TestStrictCohort < Test::Unit::TestCase
   #   cohort = Citizen.strict_cohort [[:favorite_color, 'heliotrope']], :minimum_cohort_size => 0
   #   assert_equal 1, Citizen.where(cohort).count
   # 
-  #   favorite_color_matters_most = [ [:favorite_color, 'heliotrope'], [:birthdate, @date_range] ]
-  #   birthdate_matters_most =      [ [:birthdate, @date_range], [:favorite_color, 'heliotrope'] ]
+  #   favorite_color_matters_most = [ [:favorite_color, 'heliotrope'], [:birthdate, @eighties] ]
+  #   birthdate_matters_most =      [ [:birthdate, @eighties], [:favorite_color, 'heliotrope'] ]
   # 
   #   cohort = Citizen.strict_cohort favorite_color_matters_most
   #   assert_equal 0, Citizen.where(cohort).count

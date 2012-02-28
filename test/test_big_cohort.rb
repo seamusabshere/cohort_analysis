@@ -3,7 +3,7 @@ require 'helper'
 class TestBigCohort < Test::Unit::TestCase
   def setup
     Citizen.minimum_cohort_size = 3
-    @date_range = (Date.parse('1980-01-01')..Date.parse('1990-01-01'))
+    @eighties = (Date.parse('1980-01-01')..Date.parse('1990-01-01'))
   end
 
   def test_001_empty
@@ -17,10 +17,10 @@ class TestBigCohort < Test::Unit::TestCase
   end
 
   def test_003_seek_cohort_of_maximum_size
-    cohort = Citizen.big_cohort :birthdate => @date_range, :favorite_color => 'heliotrope'
+    cohort = Citizen.big_cohort :birthdate => @eighties, :favorite_color => 'heliotrope'
     assert_equal 9, Citizen.where(cohort).count
     assert Citizen.where(cohort).any? { |m| m.favorite_color != 'heliotrope' }
-    assert Citizen.where(cohort).all? { |m| @date_range.include? m.birthdate }
+    assert Citizen.where(cohort).all? { |m| @eighties.include? m.birthdate }
   end
   
   def test_004_unsurprising_treatment_of_arrays
