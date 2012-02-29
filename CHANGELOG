@@ -1,6 +1,12 @@
+0.4.0 / 2012-02-28
+
+* renamed to cohort_analysis
+
+* new, simplified syntax - see README.markdown
+
 0.3.0 / 2012-02-27
 
-* Now my_cohort = Person.cohort({:favorite_color => 'heliotrope', :birthdate => @date_range}, :importance => [:birthdate, :favorite_color]) will return a Arel::Nodes::Node which can be combined like Person.where(my_cohort.and("gender = 'male")) - it does NOT return a "scope" like before.
+* Now my_strategy = Person.strategy({:favorite_color => 'heliotrope', :birthdate => @date_range}, :importance => [:birthdate, :favorite_color]) will return a Arel::Nodes::Node which can be combined like Person.where(my_strategy.and("gender = 'male")) - it does NOT return a "scope" like before.
 
 * Refactor to take advantage of ARel.
 

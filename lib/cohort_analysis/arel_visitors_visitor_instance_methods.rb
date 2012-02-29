@@ -1,6 +1,6 @@
-module CohortScope
+module CohortAnalysis
   module ArelVisitorsVisitorInstanceMethods
-    def visit_CohortScope_Cohort(o)
+    def visit_CohortAnalysis_Strategy(o)
       o.expr
     end
   end

@@ -1,9 +1,12 @@
-source "http://rubygems.org"
+source :rubygems
 
-# Specify your gem's dependencies in cohort_scope.gemspec
 gemspec
 
-# gem 'ruby-debug19'
-gem 'test-unit'
+# development dependencies
+gem 'minitest'
+gem 'minitest-reporters'
+gem 'factory_girl'
 gem 'mysql2'
 gem 'rake'
+gem 'yard'
+# gem 'ruby-debug19'

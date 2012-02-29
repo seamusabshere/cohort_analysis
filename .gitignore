@@ -22,3 +22,5 @@ pkg
 Gemfile.lock
 test/test.log
 *.gem
+.yardoc
+doc/
