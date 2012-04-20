@@ -9,8 +9,6 @@ MiniTest::Unit.runner.reporters << MiniTest::Reporters::SpecReporter.new
 
 require 'factory_girl'
 
-$LOAD_PATH.unshift(File.dirname(__FILE__))
-$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 require 'cohort_analysis'
 
 if ::Bundler.definition.specs['ruby-debug19'].first or ::Bundler.definition.specs['ruby-debug'].first
