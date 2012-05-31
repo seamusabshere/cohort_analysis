@@ -1,3 +1,10 @@
+1.0.0 / 2012-05-30
+
+* Breaking changes
+
+  * ActiveRecord::{Base.,Relation#}cohort returns an Arel::SelectManager, NOT another ActiveRecord::Relation. That means you can't call, for example, #count on it - you have to treat it like an ARel object.
+  * Removed #cohort_constraint. It was confusing and indicated a problem with plain ol' #cohort.
+
 0.4.0 / 2012-02-28
 
 * renamed to cohort_analysis

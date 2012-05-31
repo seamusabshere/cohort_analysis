@@ -17,5 +17,14 @@ Gem::Specification.new do |gem|
   gem.version       = CohortAnalysis::VERSION
 
   gem.add_runtime_dependency "activesupport", '>=3'
-  gem.add_runtime_dependency "activerecord", '>=3'
+  
+  gem.add_development_dependency "activerecord", '>=3'
+  gem.add_development_dependency 'active_record_inline_schema'
+  gem.add_development_dependency 'sqlite3'
+  gem.add_development_dependency 'minitest'
+  gem.add_development_dependency 'minitest-reporters'
+  gem.add_development_dependency 'yard'
+  gem.add_development_dependency 'factory_girl'
+
+  # gem.add_development_dependency 'debugger'
 end

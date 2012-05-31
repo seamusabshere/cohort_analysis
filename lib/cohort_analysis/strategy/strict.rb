@@ -1,7 +1,9 @@
 module CohortAnalysis
   class Strategy
     class Strict < Strategy
-      def initialize(active_record_relation, characteristics, options = {})
+      attr_reader :reverse_priority
+      
+      def initialize(select_manager, characteristics, options = {})
         super
         if priority = options[:priority]
           @reverse_priority = priority.reverse
@@ -12,15 +14,15 @@ module CohortAnalysis
 
       # Reduce characteristics by removing the least important one.
       def reduce!
-        least_important_key = if @reverse_priority
-          @reverse_priority.detect do |k|
-            @reduced_characteristics.has_key? k
+        least_important_key = if reverse_priority
+          reverse_priority.detect do |k|
+            current.has_key? k
           end
         else
-          @reduced_characteristics.keys.last
+          current.keys.last
         end
         if least_important_key
-          @reduced_characteristics.delete least_important_key
+          current.delete least_important_key
         else
           raise ::RuntimeError, "[cohort_analysis] Priority improperly specified"
         end
