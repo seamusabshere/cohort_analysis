@@ -1,13 +1,25 @@
+1.0.0 / 2012-05-30
+
+* Breaking changes
+
+  * Cohorts with initially (originally) empty characteristics return everything. Before they returned nothing.
+  * Removed #cohort_constraint. There was really no correct way to use it. Now it's recommended you union together cohorts.
+  * ActiveRecord::{Base.,Relation#}cohort returns an Arel::SelectManager, NOT another ActiveRecord::Relation. That means you can't call, for example, #count on it - you have to treat it like an ARel object.
+
+* Enhancements
+
+  * You can use #cohort when composing with ARel. Just be safe about how you use it - it's not an automagic ActiveRecord::Relation.
+  * True unit tests, including explicit tests for UNIONing together cohorts.
+  * Tested on MRI 1.8, MRI 1.9, and JRuby 1.6.7
+
 0.4.0 / 2012-02-28
 
 * renamed to cohort_analysis
-
 * new, simplified syntax - see README.markdown
 
 0.3.0 / 2012-02-27
 
 * Now my_strategy = Person.strategy({:favorite_color => 'heliotrope', :birthdate => @date_range}, :importance => [:birthdate, :favorite_color]) will return a Arel::Nodes::Node which can be combined like Person.where(my_strategy.and("gender = 'male")) - it does NOT return a "scope" like before.
-
 * Refactor to take advantage of ARel.
 
 0.2.0

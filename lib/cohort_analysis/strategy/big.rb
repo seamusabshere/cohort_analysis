@@ -5,14 +5,13 @@ module CohortAnalysis
       #
       # The characteristic whose removal leads to the highest record count is removed from the overall characteristic set.
       def reduce!
-        @reduced_characteristics = if @reduced_characteristics.keys.length < 2
+        @current = if current.keys.length < 2
           {}
         else
-          most_restrictive_characteristic = @reduced_characteristics.keys.max_by do |key|
-            conditions = CohortAnalysis.conditions_for @reduced_characteristics.except(key)
-            @active_record_relation.where(conditions).count
+          most_restrictive = current.keys.max_by do |k|
+            count current.except(k)
           end
-          @reduced_characteristics.except most_restrictive_characteristic
+          current.except most_restrictive
         end
       end
     end

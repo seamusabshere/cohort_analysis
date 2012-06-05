@@ -16,6 +16,24 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
   gem.version       = CohortAnalysis::VERSION
 
-  gem.add_runtime_dependency "activesupport", '>=3'
-  gem.add_runtime_dependency "activerecord", '>=3'
+  gem.add_runtime_dependency 'activesupport', '>=3'
+  gem.add_runtime_dependency 'arel', '>=3'
+  
+  gem.add_development_dependency 'activerecord', '>=3'
+  gem.add_development_dependency 'active_record_inline_schema'
+  gem.add_development_dependency 'minitest'
+  gem.add_development_dependency 'minitest-reporters'
+  gem.add_development_dependency 'yard'
+  if RUBY_VERSION >= '1.9'
+    gem.add_development_dependency 'factory_girl'
+  else
+    gem.add_development_dependency 'factory_girl', '~>2'
+  end
+  if RUBY_PLATFORM == 'java'
+    gem.add_development_dependency 'activerecord-jdbcsqlite3-adapter'
+  else
+    gem.add_development_dependency 'sqlite3'
+  end
+
+  # gem.add_development_dependency 'debugger'
 end
