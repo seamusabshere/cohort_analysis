@@ -30,9 +30,14 @@ Gem::Specification.new do |gem|
     gem.add_development_dependency 'factory_girl', '~>2'
   end
   if RUBY_PLATFORM == 'java'
+    gem.add_development_dependency 'jruby-openssl'
     gem.add_development_dependency 'activerecord-jdbcsqlite3-adapter'
+    gem.add_development_dependency 'activerecord-jdbcmysql-adapter'
+    gem.add_development_dependency 'activerecord-jdbcpostgresql-adapter'
   else
     gem.add_development_dependency 'sqlite3'
+    gem.add_development_dependency 'mysql2'
+    gem.add_development_dependency 'pg'
   end
 
   # gem.add_development_dependency 'debugger'

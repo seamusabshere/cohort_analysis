@@ -9,7 +9,17 @@ Rake::TestTask.new(:test) do |test|
   test.verbose = true
 end
 
-task :default => :test
+task :test_each_db_adapter do
+  %w{ mysql sqlite postgresql }.each do |database|
+    puts
+    puts "#{'*'*10} Running tests with #{database}"
+    puts
+    puts `rake test DATABASE=#{database}`
+  end
+end
+
+task :default => :test_each_db_adapter
+task :spec => :test_each_db_adapter
 
 require 'yard'
 YARD::Rake::YardocTask.new

@@ -183,7 +183,7 @@ shared_examples_for 'an adapter the provides #cohort' do
     it "can get where sql" do
       FactoryGirl.create(:lax_ord)
       FactoryGirl.create(:lax_sfo)
-      model.cohort(:origin => 'LAX').where_sql.must_equal %{WHERE ("flights"."origin" = 'LAX')}
+      model.cohort(:origin => 'LAX').where_sql.delete('"`').must_equal %{WHERE (flights.origin = 'LAX')}
     end
 
     it "will resolve independently from other cohorts" do
@@ -230,31 +230,35 @@ shared_examples_for 'an adapter the provides #cohort' do
 
       # sanity check!
       it "has tests that use unions properly" do
-        ord = model.where(f_t[:dest].eq('ORD')).project(Arel.star)
-        sfo = model.where(f_t[:dest].eq('SFO')).project(Arel.star)
-        Flight.find_by_sql("SELECT * FROM #{ord.union(sfo).to_sql}").must_equal [@ord, @sfo]
+        ord = model.where(f_t[:dest].eq('ORD'))
+        sfo = model.where(f_t[:dest].eq('SFO'))
+        ord.projections = [Arel.star]
+        sfo.projections = [Arel.star]
+        Flight.find_by_sql("SELECT * FROM #{Arel::Nodes::TableAlias.new(ord.union(sfo), 't1').to_sql}").must_equal [@ord, @sfo]
       end
         
       it "builds successful cohorts" do
         ord = model.cohort(:dest => 'ORD').project(Arel.star)
         sfo = model.cohort(:dest => 'SFO').project(Arel.star)
-        Flight.find_by_sql("SELECT * FROM #{ord.union(sfo).to_sql}").must_equal [@ord, @sfo]
+        Flight.find_by_sql("SELECT * FROM #{Arel::Nodes::TableAlias.new(ord.union(sfo), 't1').to_sql}").must_equal [@ord, @sfo]
 
         msn = model.cohort(:origin => 'LAX', :dest => 'MSN').project(Arel.star)
         lhr = model.cohort(:origin => 'LAX', :dest => 'LHR').project(Arel.star)
-        Flight.find_by_sql("SELECT * FROM #{msn.union(lhr).to_sql}").must_equal [@ord, @sfo]
+        Flight.find_by_sql("SELECT * FROM #{Arel::Nodes::TableAlias.new(msn.union(lhr), 't1').to_sql}").must_equal [@ord, @sfo]
       end
 
       it "doesn't somehow create unions with false positives" do
         msn = model.cohort(:dest => 'MSN').project(Arel.star)
         lhr = model.cohort(:dest => 'LHR').project(Arel.star)
-        ActiveRecord::Base.connection.select_value("SELECT COUNT(*) FROM #{msn.union(lhr).to_sql}").must_equal 0
+        count = ActiveRecord::Base.connection.select_value("SELECT COUNT(*) FROM #{Arel::Nodes::TableAlias.new(msn.union(lhr), 't1').to_sql}")
+        flunk "count was nil" if count.nil?
+        count.to_i.must_equal 0
       end
 
       it "builds unions where only one side has rows" do
         msn = model.cohort(:dest => 'MSN').project(Arel.star)
         ord = model.cohort(:dest => 'ORD').project(Arel.star)
-        Flight.find_by_sql("SELECT * FROM #{msn.union(ord).to_sql}").must_equal [@ord]
+        Flight.find_by_sql("SELECT * FROM #{Arel::Nodes::TableAlias.new(msn.union(ord), 't1').to_sql}").must_equal [@ord]
       end
     end
   end
@@ -265,7 +269,9 @@ describe CohortAnalysis do
     relation = relation.clone
     relation.projections = [Arel.sql('COUNT(*)')]
     sql = relation.to_sql
-    ActiveRecord::Base.connection.select_value(sql).must_equal expected_count
+    count = ActiveRecord::Base.connection.select_value(sql)
+    flunk "count was nil" if count.nil?
+    count.to_i.must_equal expected_count
   end
 
   def assert_members(expected_members, relation)

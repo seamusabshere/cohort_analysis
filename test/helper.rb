@@ -14,6 +14,8 @@ require 'active_record_inline_schema'
 
 require 'cohort_analysis'
 
+require 'arel/nodes/table_alias' # strange
+
 if ::Bundler.definition.specs['debugger'].first
   require 'debugger'
 elsif ::Bundler.definition.specs['ruby-debug'].first
@@ -23,7 +25,47 @@ end
 # require 'logger'
 # ActiveRecord::Base.logger = Logger.new($stdout)
 
-ActiveRecord::Base.establish_connection(:adapter => "sqlite3", :database => ":memory:")
+case ENV['DATABASE']
+when /mysql/i
+  bin = ENV['TEST_MYSQL_BIN'] || 'mysql'
+  username = ENV['TEST_MYSQL_USERNAME'] || 'root'
+  password = ENV['TEST_MYSQL_PASSWORD'] || 'password'
+  database = ENV['TEST_MYSQL_DATABASE'] || 'test_cohort_analysis'
+  cmd = "#{bin} -u #{username} -p#{password}"
+  `#{cmd} -e 'show databases'`
+  unless $?.success?
+    $stderr.puts "Skipping mysql tests because `#{cmd}` doesn't work"
+    exit 0
+  end
+  system %{#{cmd} -e "drop database #{database}"}
+  system %{#{cmd} -e "create database #{database}"}
+  ActiveRecord::Base.establish_connection(
+    'adapter' => (RUBY_PLATFORM == 'java' ? 'mysql' : 'mysql2'),
+    'encoding' => 'utf8',
+    'database' => database,
+    'username' => username,
+    'password' => password
+  )
+when /postgr/i
+  createdb_bin = ENV['TEST_CREATEDB_BIN'] || 'createdb'
+  dropdb_bin = ENV['TEST_DROPDB_BIN'] || 'dropdb'
+  username = ENV['TEST_POSTGRES_USERNAME'] || `whoami`.chomp
+  # password = ENV['TEST_POSTGRES_PASSWORD'] || 'password'
+  database = ENV['TEST_POSTGRES_DATABASE'] || 'test_cohort_analysis'
+  system %{#{dropdb_bin} #{database}}
+  system %{#{createdb_bin} #{database}}
+  ActiveRecord::Base.establish_connection(
+    'adapter' => 'postgresql',
+    'encoding' => 'utf8',
+    'database' => database,
+    'username' => username
+    # 'password' => password
+  )
+when /sqlite/i
+  ActiveRecord::Base.establish_connection(:adapter => "sqlite3", :database => ":memory:")
+else
+  raise "don't know how to test against #{ENV['DATABASE']}"
+end
 
 Arel::Table.engine = ActiveRecord::Base
 
