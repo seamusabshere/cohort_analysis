@@ -17,6 +17,7 @@ Gem::Specification.new do |gem|
   gem.version       = CohortAnalysis::VERSION
 
   gem.add_runtime_dependency "activesupport", '>=3'
+  gem.add_runtime_dependency 'arel', '>=3'
   
   gem.add_development_dependency "activerecord", '>=3'
   gem.add_development_dependency 'active_record_inline_schema'
