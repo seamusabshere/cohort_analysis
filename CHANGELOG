@@ -2,8 +2,14 @@
 
 * Breaking changes
 
-  * ActiveRecord::{Base.,Relation#}cohort returns an Arel::SelectManager, NOT another ActiveRecord::Relation. That means you can't call, for example, #count on it - you have to treat it like an ARel object.
   * Removed #cohort_constraint. It was confusing and indicated a problem with plain ol' #cohort.
+  * ActiveRecord::{Base.,Relation#}cohort returns an Arel::SelectManager, NOT another ActiveRecord::Relation. That means you can't call, for example, #count on it - you have to treat it like an ARel object.
+  * Ruby 1.8.7 not supported (?)
+
+* Enhancements
+
+  * You can compose with the results of #cohort. Just be safe about how you use it - it's not an automagic ActiveRecord::Relation.
+  * True unit tests, including explicit tests for UNIONing together cohorts.
 
 0.4.0 / 2012-02-28
 
