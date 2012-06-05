@@ -90,13 +90,16 @@ module CohortAnalysis
       end
     end
 
+    def other_constraints
+      select_manager.constraints.reject do |constraint|
+        self == constraint
+      end
+    end
+
     def count(subset)
       constraints = grasp subset
 
-      select_manager.constraints.each do |constraint|
-        if self == constraint
-          next
-        end
+      other_constraints.each do |constraint|
         if constraint.is_a? String
           constraint = Arel::Nodes::Grouping.new constraint
         end
