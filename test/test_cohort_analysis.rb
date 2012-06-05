@@ -50,6 +50,12 @@ describe CohortAnalysis do
         Flight.cohort({:origin => 'LAX'}, :minimum_size => 2).count.must_equal 0
       end
 
+      it "returns nothing when characteristics are empty" do
+        FactoryGirl.create(:lax)
+        FactoryGirl.create(:lax_sfo)
+        Flight.cohort({}).count.must_equal 0
+      end
+
       it "doesn't discard characteristics if it doesn't need to" do
         FactoryGirl.create(:lax)
         FactoryGirl.create(:lax_sfo)
