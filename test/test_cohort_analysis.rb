@@ -40,6 +40,17 @@ shared_examples_for 'an adapter the provides #cohort' do
       assert_count 0, model.cohort(:dest => 'MSN')
     end
 
+    it "handles arrays of values" do
+      FactoryGirl.create(:lax_ord)
+      FactoryGirl.create(:lax_sfo)
+      assert_count 2, model.cohort(:dest => ['ORD','SFO'])
+      assert_count 2, model.cohort(:origin => ['LAX'])
+      assert_count 1, model.cohort(:dest => ['SFO'])
+      assert_count 1, model.cohort(:origin => ['LAX'], :dest => ['SFO'])
+      assert_count 0, model.cohort(:dest => ['MSN'])
+      assert_count 1, model.cohort(:dest => ['MSN','SFO'])
+    end
+
     it "matches everything if empty characteristics" do
       FactoryGirl.create(:lax_ord)
       FactoryGirl.create(:lax_sfo)

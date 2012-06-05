@@ -80,7 +80,14 @@ module CohortAnalysis
     end
 
     def grasp(subset)
-      subset.map { |k, v| table[k].eq(v) }
+      subset.map do |k, v|
+        case v
+        when Array
+          table[k].in v
+        else
+          table[k].eq v
+        end
+      end
     end
 
     def count(subset)
