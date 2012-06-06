@@ -1,4 +1,10 @@
-unreleased
+1.0.3 / 2012-06-06
+
+* Bug fixes
+
+  * Properly handle range conditions
+
+1.0.2 / 2012-06-06
 
 * Enhancements
 

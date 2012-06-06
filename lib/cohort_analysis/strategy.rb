@@ -85,7 +85,7 @@ module CohortAnalysis
     def grasp(subset)
       subset.map do |k, v|
         case v
-        when Array
+        when Array, Range
           table[k].in v
         else
           table[k].eq v

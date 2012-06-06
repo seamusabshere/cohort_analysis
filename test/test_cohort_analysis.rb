@@ -51,6 +51,15 @@ shared_examples_for 'an adapter the provides #cohort' do
       assert_count 1, model.cohort(:dest => ['MSN','SFO'])
     end
 
+    it "handles ranges of values" do
+      FactoryGirl.create(:lax_ord, :year => 20)
+      FactoryGirl.create(:lax_ord, :year => 15)
+      FactoryGirl.create(:lax_ord, :year => 10)
+      assert_count 3, model.cohort(:year => 10..20)
+      assert_count 2, model.cohort(:year => 11..20)
+      assert_count 1, model.cohort(:year => 11..19)
+    end
+
     it "matches everything if empty characteristics" do
       FactoryGirl.create(:lax_ord)
       FactoryGirl.create(:lax_sfo)
