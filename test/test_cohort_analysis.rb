@@ -183,7 +183,7 @@ shared_examples_for 'an adapter the provides #cohort' do
     it "can get where sql" do
       FactoryGirl.create(:lax_ord)
       FactoryGirl.create(:lax_sfo)
-      model.cohort(:origin => 'LAX').where_sql.delete('"`').must_equal %{WHERE (flights.origin = 'LAX')}
+      model.cohort(:origin => 'LAX').where_sql.delete('"`').must_equal %{WHERE flights.origin = 'LAX'}
     end
 
     it "will resolve independently from other cohorts" do

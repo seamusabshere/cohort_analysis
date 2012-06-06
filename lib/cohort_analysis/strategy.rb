@@ -72,7 +72,7 @@ module CohortAnalysis
       elsif current.empty?
         Impossible
       elsif count(current) >= minimum_size
-        Arel::Nodes::Grouping.new grasp(current).inject(:and)
+        grasp(current).inject :and
       else
         reduce!
         resolve!
