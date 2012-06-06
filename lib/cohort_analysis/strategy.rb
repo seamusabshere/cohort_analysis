@@ -37,7 +37,7 @@ module CohortAnalysis
       @original = characteristics.dup
       @current = characteristics.dup
       @minimum_size = options.fetch(:minimum_size, 1)
-      @final_mutex = ::Mutex.new
+      @final_mutex = Mutex.new
     end
 
     def final
@@ -68,10 +68,13 @@ module CohortAnalysis
     # Recursively look for a scope that meets the characteristics and is at least <tt>minimum_size</tt>.
     def resolve!
       if original.empty?
+        select_manager.cohort_possible!
         AlwaysTrue
       elsif current.empty?
+        select_manager.cohort_impossible!
         Impossible
       elsif count(current) >= minimum_size
+        select_manager.cohort_possible!
         grasp(current).inject :and
       else
         reduce!

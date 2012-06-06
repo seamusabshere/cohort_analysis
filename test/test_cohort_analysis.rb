@@ -261,6 +261,30 @@ shared_examples_for 'an adapter the provides #cohort' do
         Flight.find_by_sql("SELECT * FROM #{Arel::Nodes::TableAlias.new(msn.union(ord), 't1').to_sql}").must_equal [@ord]
       end
     end
+
+    describe :cohort_possible? do
+      it "can be used after the cohort is resolved" do
+        FactoryGirl.create(:lax_ord)
+        FactoryGirl.create(:lax_sfo)
+        yes = model.cohort(:origin => 'LAX')
+        yes.to_sql # force the cohort to resolve
+        no = model.cohort(:dest => 'MSN')
+        no.to_sql
+        assert yes.cohort_possible?
+        refute no.cohort_possible?
+      end
+
+      it "may be available even after further composition" do
+        FactoryGirl.create(:lax_ord)
+        FactoryGirl.create(:lax_sfo)
+        yes = model.cohort(:origin => 'LAX').where(moot_condition)
+        yes.to_sql # force the cohort to resolve
+        no = model.cohort(:dest => 'MSN').where(moot_condition)
+        no.to_sql
+        assert yes.cohort_possible?
+        refute no.cohort_possible?
+      end
+    end
   end
 end
 

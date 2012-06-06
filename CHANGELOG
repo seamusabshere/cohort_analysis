@@ -1,3 +1,9 @@
+unreleased
+
+* Enhancements
+
+  * Arel::SelectManager#cohort_possible? - in case you want to know without having to re-count.
+
 1.0.1 / 2012-06-05
 
 * Bug fixes
