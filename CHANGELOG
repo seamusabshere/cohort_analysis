@@ -3,12 +3,13 @@ unreleased
 * Enhancements
 
   * Arel::SelectManager#cohort_possible? - in case you want to know without having to re-count.
+  * Simplify aliasing examples in tests.
 
 1.0.1 / 2012-06-05
 
 * Bug fixes
 
-  * Properly test on mysql and postgres - you'll need a table alias. You may also need to `require 'arel/nodes/table_alias'`
+  * Properly test on mysql and postgres - you'll need a table/subquery alias like "AS t1"
 
 1.0.0 / 2012-06-05
 

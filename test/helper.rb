@@ -14,8 +14,6 @@ require 'active_record_inline_schema'
 
 require 'cohort_analysis'
 
-require 'arel/nodes/table_alias' # strange
-
 if ::Bundler.definition.specs['debugger'].first
   require 'debugger'
 elsif ::Bundler.definition.specs['ruby-debug'].first
